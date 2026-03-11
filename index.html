@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>尋遊桃仔園 - 數位人文跨域人才培育計畫 (雲端版)</title>
+    <link rel="stylesheet" href="style.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&family=Noto+Sans+TC:wght@300;400;700&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <header>
+        <div class="top-nav">
+            <div class="logo">尋遊桃仔園</div>
+            <nav>
+                <ul class="nav-links">
+                    <li class="dropdown">
+                        <a href="#">首頁</a>
+                    </li>
+                    <li class="dropdown">
+                        <a href="#">認識計畫</a>
+                    </li>
+                    <li><a href="admin.html" class="admin-link">進入後台</a></li>
+                </ul>
+            </nav>
+            <div class="search-icon">🔍</div>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="hero-content">
+                <h1 class="main-title">尋遊桃仔園</h1>
+                <h2 class="sub-title">雲端同步數位人文平台</h2>
+            </div>
+        </section>
+
+        <section class="container">
+            <div class="section-header">
+                <h3 class="section-title">最新消息 (雲端讀取)</h3>
+                <a href="#" class="view-more">更多消息 ></a>
+            </div>
+
+            <div class="news-list" id="posts-container">
+                <div class="news-item loading">即將從雲端讀取內容...</div>
+            </div>
+        </section>
+
+        <section class="multimedia-section container">
+            <div class="section-header">
+                <h3 class="section-title">精選影音</h3>
+            </div>
+            <div id="latest-video-container" class="media-container video-wrapper">
+                <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" title="YouTube video player" frameborder="0"
+                    allowfullscreen></iframe>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 數位人文鍊金術 - 中原大學</p>
+    </footer>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+    <!-- 我們的設定檔 -->
+    <script src="firebase-config.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            loadPostsFromCloud();
+        });
+
+        function loadPostsFromCloud() {
+            const postsContainer = document.getElementById('posts-container');
+            const videoFrame = document.querySelector('#latest-video-container iframe');
+
+            // 監聽雲端資料庫變化 (Real-time listener)
+            db.collection("posts").orderBy("date", "desc").onSnapshot((querySnapshot) => {
+                postsContainer.innerHTML = '';
+
+                if (querySnapshot.empty) {
+                    postsContainer.innerHTML = '<div class="news-item">尚無最新消息。</div>';
+                    return;
+                }
+
+                let foundVideo = false;
+
+                querySnapshot.forEach((doc) => {
+                    const post = doc.data();
+                    const item = document.createElement('div');
+                    item.className = 'news-item';
+                    item.innerHTML = `
+                        <div class="news-content">
+                            <span class="category-tag">${post.category || '消息'}</span>
+                            <a href="post.html?id=${doc.id}">${post.title}</a>
+                        </div>
+                        <span class="date">${post.date}</span>
+                    `;
+                    postsContainer.appendChild(item);
+
+                    // 自動更新首頁大影片為最上方有影片的文章
+                    if (!foundVideo && post.videoUrl) {
+                        const videoId = getYouTubeID(post.videoUrl);
+                        if (videoId && videoFrame) {
+                            videoFrame.src = `https://www.youtube.com/embed/${videoId}`;
+                            foundVideo = true;
+                        }
+                    }
+                });
+            }, (error) => {
+                postsContainer.innerHTML = '<div class="news-item" style="color:red;">資料載入失敗：' + error.message + '</div>';
+            });
+        }
+
+        function getYouTubeID(url) {
+            if (!url) return null;
+            const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/|youtube\.com\/shorts\/|youtube\.com\/live\/)([^"&?\/\s]{11})/i;
+            const match = url.match(regex);
+            return match ? match[1] : null;
+        }
+    </script>
+</body>
+
+</html>

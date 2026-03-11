@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>尋遊桃仔園 - 數位人文跨域人才培育計畫</title>
+    <link rel="stylesheet" href="style.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&family=Noto+Sans+TC:wght@300;400;700&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <header>
+        <div class="top-nav">
+            <div class="logo">尋遊桃仔園</div>
+            <nav>
+                <ul class="nav-links">
+                    <li class="dropdown">
+                        <a href="#">首頁</a>
+                        <ul class="dropdown-content">
+                            <li><a href="#">關於我們</a></li>
+                            <li><a href="#">計畫架構</a></li>
+                        </ul>
+                    </li>
+                    <li class="dropdown">
+                        <a href="#">認識計畫</a>
+                    </li>
+                    <li class="dropdown">
+                        <a href="#">課程與修課</a>
+                    </li>
+                    <li class="dropdown">
+                        <a href="#">核心課程成果</a>
+                    </li>
+                    <li><a href="admin.html" class="admin-link">進入後台</a></li>
+                </ul>
+            </nav>
+            <div class="search-icon">🔍</div>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="hero-content">
+                <h1 class="main-title">尋遊桃仔園</h1>
+                <h2 class="sub-title">數位人文跨域人才培育計畫</h2>
+            </div>
+        </section>
+
+        <section class="container">
+            <div class="section-header">
+                <h3 class="section-title">最新消息</h3>
+                <a href="#" class="view-more">更多消息 ></a>
+            </div>
+
+            <div class="news-list" id="posts-container">
+                <!-- Posts will be loaded here via JS -->
+                <div class="news-item loading">載入中...</div>
+            </div>
+        </section>
+
+        <section class="multimedia-section container">
+            <div class="section-header">
+                <h3 class="section-title">精選影音</h3>
+            </div>
+            <div class="media-container video-wrapper">
+                <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" title="YouTube video player" frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowfullscreen></iframe>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 數位人文鍊金術 - 中原大學</p>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
