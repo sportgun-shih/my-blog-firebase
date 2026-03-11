@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理後台 - 尋遊桃仔園 (雲端版)</title>
+    <link rel="stylesheet" href="style.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&family=Noto+Sans+TC:wght@300;400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        .admin-container {
+            max-width: 800px;
+            margin: 4rem auto;
+            padding: 2rem;
+            background: white;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: inherit;
+        }
+
+        button {
+            padding: 0.8rem 2rem;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .posts-mgmt-list {
+            margin-top: 3rem;
+            border-top: 2px solid #eee;
+            padding-top: 2rem;
+        }
+
+        .mgmt-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 1rem 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .btn-delete {
+            background-color: #ff4d4d;
+            font-size: 0.8rem;
+            padding: 0.4rem 0.8rem;
+        }
+
+        .status-msg {
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .status-error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .status-success {
+            background: #dcfce7;
+            color: #166534;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="top-nav">
+            <div class="logo">尋遊桃仔園 - 管理後台 (FireBase)</div>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="index.html">回前台</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <div class="admin-container">
+        <div id="status" class="status-msg"></div>
+
+        <h3>新增消息 / 文章 (Firestore 雲端儲存)</h3>
+        <br>
+        <form id="post-form">
+            <div class="form-group" style="display: flex; gap: 1rem;">
+                <div style="flex: 2;">
+                    <label for="title">標題</label>
+                    <input type="text" id="title" required placeholder="請輸入標題">
+                </div>
+                <div style="flex: 1;">
+                    <label for="category">分類</label>
+                    <input type="text" id="category" placeholder="例如：活動消息" list="categories">
+                    <datalist id="categories">
+                        <option value="活動消息">
+                        <option value="學術研討">
+                        <option value="課程成果">
+                        <option value="工作坊">
+                    </datalist>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="date">日期</label>
+                <input type="date" id="date" required>
+            </div>
+            <div class="form-group">
+                <label for="imageUrl">圖片嵌入網址 (Optional)</label>
+                <input type="url" id="imageUrl" placeholder="HTTPS 圖片網址 (例如：https://.../img.jpg)">
+            </div>
+            <div class="form-group">
+                <label for="videoUrl">YouTube 影片網址 (Optional)</label>
+                <input type="url" id="videoUrl"
+                    placeholder="https://www.youtube.com/watch?v=... 或 https://youtu.be/...">
+            </div>
+
+            <!-- Real-time Preview Area -->
+            <div id="media-preview"
+                style="margin-bottom: 2rem; display: none; padding: 1rem; background: #f8f9fa; border: 1px dashed #ccc; border-radius: 8px;">
+                <p style="font-size: 0.8rem; color: #666; margin-bottom: 0.5rem;">媒體預覽：</p>
+                <div id="preview-container"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="content">內容</label>
+                <textarea id="content" rows="8" placeholder="請輸入內文..."></textarea>
+            </div>
+            <button type="submit" id="submit-btn">發佈到雲端</button>
+        </form>
+
+        <div class="posts-mgmt-list">
+            <h3>目前雲端文章列表</h3>
+            <div id="admin-posts-list">
+                <p>載入雲端資料中...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+    <!-- 我們的設定檔 -->
+    <script src="firebase-config.js"></script>
+
+    <script>
+        let editingPostId = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // 檢查 Firebase 是否正確初始化
+            try {
+                if (!firebase.apps.length) {
+                    showStatus('Firebase 未正確初始化，請檢查 firebase-config.js 中的設定', 'error');
+                } else {
+                    renderAdminPosts();
+                }
+            } catch (e) {
+                showStatus('發生錯誤：' + e.message, 'error');
+            }
+
+            // Preview logic
+            const imgInput = document.getElementById('imageUrl');
+            const videoInput = document.getElementById('videoUrl');
+
+            imgInput.addEventListener('input', updatePreview);
+            videoInput.addEventListener('input', updatePreview);
+
+            document.getElementById('post-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const btn = document.getElementById('submit-btn');
+                btn.disabled = true;
+                btn.textContent = '傳送中...';
+
+                const title = document.getElementById('title').value;
+                const category = document.getElementById('category').value;
+                const date = document.getElementById('date').value;
+                const imageUrl = document.getElementById('imageUrl').value;
+                const videoUrl = document.getElementById('videoUrl').value;
+                const content = document.getElementById('content').value;
+
+                try {
+                    if (editingPostId) {
+                        // 更新現有文章 (Update)
+                        await db.collection("posts").doc(editingPostId).update({
+                            title, category, date, imageUrl, videoUrl, content,
+                            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                        editingPostId = null;
+                        btn.textContent = '發佈到雲端';
+                    } else {
+                        // 建立新文章 (Add)
+                        await db.collection("posts").add({
+                            title, category, date, imageUrl, videoUrl, content,
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                    }
+
+                    e.target.reset();
+                    updatePreview();
+                    showStatus('儲存成功！資料已同步至雲端', 'success');
+                } catch (err) {
+                    console.error("Save error:", err);
+                    showStatus('儲存失敗：' + err.message, 'error');
+                } finally {
+                    btn.disabled = false;
+                    if (!editingPostId) btn.textContent = '發佈到雲端';
+                }
+            });
+        });
+
+        function showStatus(msg, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = msg;
+            statusDiv.style.display = 'block';
+            statusDiv.className = 'status-msg status-' + type;
+            setTimeout(() => { statusDiv.style.display = 'none'; }, 5000);
+        }
+
+        // 當資料庫有變動時自動更新列表 (Real-time update)
+        function renderAdminPosts() {
+            const list = document.getElementById('admin-posts-list');
+
+            db.collection("posts").orderBy("date", "desc").onSnapshot((querySnapshot) => {
+                list.innerHTML = '';
+                if (querySnapshot.empty) {
+                    list.innerHTML = '<p>尚無文章資料。</p>';
+                    return;
+                }
+
+                querySnapshot.forEach((doc) => {
+                    const post = doc.data();
+                    const item = document.createElement('div');
+                    item.className = 'mgmt-item';
+                    item.innerHTML = `
+                        <span style="flex:1;">${post.title} (${post.date})</span>
+                        <div style="display:flex; gap:0.5rem;">
+                            <button onclick="editPost('${doc.id}')" style="background-color: #555; font-size: 0.8rem; padding: 0.4rem 0.8rem;">編輯</button>
+                            <button class="btn-delete" onclick="deletePost('${doc.id}')">刪除</button>
+                        </div>
+                    `;
+                    list.appendChild(item);
+                });
+            }, (error) => {
+                list.innerHTML = '<p style="color:red;">載入失敗：' + error.message + '</p>';
+            });
+        }
+
+        window.editPost = async (id) => {
+            try {
+                const doc = await db.collection("posts").doc(id).get();
+                if (doc.exists) {
+                    const post = doc.data();
+                    editingPostId = id;
+                    document.getElementById('title').value = post.title;
+                    document.getElementById('category').value = post.category || '';
+                    document.getElementById('date').value = post.date;
+                    document.getElementById('imageUrl').value = post.imageUrl || '';
+                    document.getElementById('videoUrl').value = post.videoUrl || '';
+                    document.getElementById('content').value = post.content || '';
+
+                    document.getElementById('submit-btn').textContent = '儲存更新內容';
+                    updatePreview();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            } catch (err) {
+                showStatus('載入詳情失敗：' + err.message, 'error');
+            }
+        };
+
+        window.deletePost = async (id) => {
+            if (confirm('確定要從雲端刪除嗎？這將無法復原。')) {
+                try {
+                    await db.collection("posts").doc(id).delete();
+                    showStatus('已成功刪除文章', 'success');
+                } catch (err) {
+                    showStatus('刪除失敗：' + err.message, 'error');
+                }
+            }
+        };
+
+        function updatePreview() {
+            const imageUrl = document.getElementById('imageUrl').value.trim();
+            const videoUrl = document.getElementById('videoUrl').value.trim();
+            const previewSection = document.getElementById('media-preview');
+            const previewContainer = document.getElementById('preview-container');
+
+            if (imageUrl === '' && videoUrl === '') {
+                previewSection.style.display = 'none';
+                return;
+            }
+
+            previewSection.style.display = 'block';
+            let previewHtml = '';
+
+            if (imageUrl) {
+                previewHtml += `<div style="margin-bottom:1rem;"><img src="${imageUrl}" style="max-width:200px; border-radius:4px; border:1px solid #ddd;" onerror="this.outerHTML='<p style=\'color:red; font-size:0.8rem;\'>圖片網址無效</p>'"></div>`;
+            }
+
+            if (videoUrl) {
+                const videoId = getYouTubeID(videoUrl);
+                if (videoId) {
+                    previewHtml += `<div style="margin-top:0.5rem;"><iframe width="200" height="112" src="https://www.youtube.com/embed/${videoId}" frameborder="0" allowfullscreen></iframe></div>`;
+                }
+            }
+            previewContainer.innerHTML = previewHtml;
+        }
+
+        function getYouTubeID(url) {
+            if (!url) return null;
+            const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/|youtube\.com\/shorts\/|youtube\.com\/live\/)([^"&?\/\s]{11})/i;
+            const match = url.match(regex);
+            return match ? match[1] : null;
+        }
+    </script>
+</body>
+
+</html>

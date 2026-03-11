@@ -1,189 +1,34 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>文章詳情 - 尋遊桃仔園 (雲端版)</title>
+    <title>文章詳情</title>
     <link rel="stylesheet" href="style.css">
-    <link
-        href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&family=Noto+Sans+TC:wght@300;400;700&display=swap"
-        rel="stylesheet">
-    <style>
-        .post-detail {
-            max-width: 850px;
-            margin: 4rem auto;
-            padding: 0 2rem;
-        }
-
-        .post-header {
-            border-bottom: 2px solid var(--secondary-color);
-            margin-bottom: 2rem;
-            padding-bottom: 1rem;
-        }
-
-        .post-meta {
-            display: flex;
-            gap: 1rem;
-            color: #777;
-            font-size: 0.9rem;
-            margin-bottom: 1rem;
-        }
-
-        .post-category {
-            background: var(--primary-color);
-            color: white;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-weight: normal;
-        }
-
-        .post-title {
-            font-size: 2.5rem;
-            color: var(--primary-color);
-            margin-bottom: 1rem;
-            line-height: 1.2;
-        }
-
-        .post-content {
-            font-size: 1.15rem;
-            line-height: 2;
-            color: #2c3e50;
-            white-space: pre-wrap;
-            margin-bottom: 3rem;
-        }
-
-        .media-container {
-            margin: 2rem 0;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        }
-
-        .media-container img,
-        .media-container iframe {
-            width: 100%;
-            display: block;
-        }
-
-        .back-btn {
-            display: inline-block;
-            margin-bottom: 2rem;
-            text-decoration: none;
-            color: var(--primary-color);
-            font-weight: bold;
-            transition: transform 0.2s;
-        }
-
-        .back-btn:hover {
-            transform: translateX(-5px);
-        }
-    </style>
 </head>
-
 <body>
-    <header>
-        <div class="top-nav">
-            <div class="logo">尋遊桃仔園</div>
-            <nav>
-                <ul class="nav-links">
-                    <li><a href="index.html">首頁</a></li>
-                    <li><a href="admin.html" class="admin-link">管理員</a></li>
-                </ul>
-            </nav>
-        </div>
-    </header>
-
-    <main class="post-detail">
-        <a href="index.html" class="back-btn">← 返回列表</a>
-        <div id="post-display">
-            <h1>載入中...</h1>
-        </div>
+    <main class="container" style="max-width: 800px; margin: 4rem auto; padding: 0 2rem;">
+        <a href="index.html">← 返回首頁</a>
+        <div id="post-display">載入中...</div>
     </main>
 
-    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-
-    <!-- 我們的設定檔 -->
     <script src="firebase-config.js"></script>
-
     <script>
-        document.addEventListener('DOMContentLoaded', async () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const postId = urlParams.get('id');
-            const postDisplay = document.getElementById('post-display');
-
-            if (!postId) {
-                postDisplay.innerHTML = '<h1>參數錯誤：未指定文章 ID</h1>';
-                return;
-            }
-
-            try {
-                // 從 Firestore 抓取特定文章
-                const doc = await db.collection("posts").doc(postId).get();
-
-                if (doc.exists) {
-                    const post = doc.data();
-                    let mediaHtml = '';
-
-                    // Image Handling
-                    if (post.imageUrl && post.imageUrl.trim() !== '') {
-                        mediaHtml += `
-                            <div class="media-container" id="img-container">
-                                <img src="${post.imageUrl}" alt="Post Image" 
-                                     onerror="handleImgError()">
-                            </div>`;
-                    }
-
-                    // Video Handling
-                    if (post.videoUrl && post.videoUrl.trim() !== '') {
-                        const videoId = getYouTubeID(post.videoUrl);
-                        if (videoId) {
-                            mediaHtml += `
-                                <div class="media-container video-wrapper">
-                                    <iframe src="https://www.youtube.com/embed/${videoId}" 
-                                            frameborder="0" 
-                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                                            allowfullscreen></iframe>
-                                </div>`;
-                        }
-                    }
-
-                    postDisplay.innerHTML = `
-                        <div class="post-header">
-                            <div class="post-meta">
-                                <span class="post-category">${post.category || '未分類'}</span>
-                                <span class="post-date">${post.date}</span>
-                            </div>
-                            <h1 class="post-title">${post.title}</h1>
-                        </div>
-                        ${mediaHtml}
-                        <div class="post-content">${post.content || '暫無內文。'}</div>
-                    `;
-                } else {
-                    postDisplay.innerHTML = '<h1>找不到文章，可能已被刪除。</h1>';
-                }
-            } catch (err) {
-                console.error("Fetch error:", err);
-                postDisplay.innerHTML = '<h1>連線雲端失敗：' + err.message + '</h1>';
+        const id = new URLSearchParams(window.location.search).get('id');
+        db.collection("posts").doc(id).get().then(doc => {
+            if (doc.exists) {
+                const post = doc.data();
+                document.getElementById('post-display').innerHTML = `
+                    <h1>${post.title}</h1>
+                    <p style="color: #666;">${post.date}</p>
+                    <div style="white-space: pre-wrap;">${post.content}</div>
+                `;
+            } else {
+                document.getElementById('post-display').innerHTML = '找不到文章';
             }
         });
-
-        function handleImgError() {
-            const container = document.getElementById('img-container');
-            if (container) {
-                container.innerHTML = '<p style="padding:40px; text-align:center; color:#888; background:#f9f9f9;">圖片無法顯示</p>';
-            }
-        }
-
-        function getYouTubeID(url) {
-            if (!url) return null;
-            const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/|youtube\.com\/shorts\/|youtube\.com\/live\/)([^"&?\/\s]{11})/i;
-            const match = url.match(regex);
-            return match ? match[1] : null;
-        }
     </script>
 </body>
-
 </html>

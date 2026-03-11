@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>數位人文專案設定指南</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --secondary: #64748b;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #1e293b;
+        }
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.8;
+            margin: 0;
+            padding: 2rem;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--card);
+            padding: 3rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        }
+        h1 {
+            color: var(--primary);
+            border-bottom: 3px solid var(--primary);
+            padding-bottom: 0.5rem;
+            text-align: center;
+        }
+        h2 {
+            color: var(--primary);
+            margin-top: 2.5rem;
+            background: #eff6ff;
+            padding: 0.5rem 1rem;
+            border-left: 5px solid var(--primary);
+        }
+        h3 {
+            color: var(--secondary);
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 0.3rem;
+        }
+        code {
+            background: #f1f5f9;
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-family: monospace;
+            color: #e11d48;
+        }
+        .step {
+            margin-bottom: 1.5rem;
+        }
+        .tip {
+            background: #fff7ed;
+            border: 1px solid #fdba74;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 2rem;
+        }
+        .tip strong { color: #9a3412; }
+        a { color: var(--primary); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎓 數位人文專案：雲端與託管全紀錄</h1>
+        <p style="text-align: center; color: #64748b;">這份指南將帶領你完成網頁作品的「GitHub 掛載」與「Firebase 雲端連接」。</p>
+
+        <h2>📅 第一階段：GitHub 網站託管</h2>
+        <div class="step">
+            <h3>1. 安裝工具</h3>
+            <ul>
+                <li>下載並安裝 <a href="https://desktop.github.com/" target="_blank">GitHub Desktop</a>。</li>
+                <li>登入你的 GitHub 帳號。</li>
+            </ul>
+        </div>
+        <div class="step">
+            <h3>2. 連結資料夾</h3>
+            <ol>
+                <li>打開 GitHub Desktop，點選 <code>File</code> > <code>Add local repository...</code></li>
+                <li>選擇專案資料夾後點擊 <code>Add repository</code>。</li>
+                <li>若提示非 Git 倉庫，點擊 <code>Create a repository</code>。</li>
+            </ol>
+        </div>
+        <div class="step">
+            <h3>3. 上傳與發布</h3>
+            <ol>
+                <li>在 <code>Summary</code> 填寫 "Initial Commit"，點擊 <code>Commit to main</code>。</li>
+                <li>點擊上方 <code>Publish repository</code>。</li>
+                <li><strong>取消勾選</strong> <code>Keep this code private</code>。</li>
+            </ol>
+        </div>
+
+        <h2>☁️ 第二階段：Firebase 雲端資料庫</h2>
+        <div class="step">
+            <h3>1. 建立專案</h3>
+            <ol>
+                <li>前往 <a href="https://console.firebase.google.com/" target="_blank">Firebase Console</a>。</li>
+                <li>點擊「新增專案」並建立 Firestore 資料庫。</li>
+                <li>選擇「測試模式啟動 (Test mode)」。</li>
+            </ol>
+        </div>
+        <div class="step">
+            <h3>2. 取得 API 金鑰</h3>
+            <ol>
+                <li>在專案設定中點擊 <code>&lt;/&gt;</code> 註冊 Web 應用程式。</li>
+                <li>複製 <code>const firebaseConfig = { ... };</code> 的內容。</li>
+            </ol>
+        </div>
+        <div class="step">
+            <h3>3. 設定程式碼</h3>
+            <p>打開 <code>firebase-config.js</code>，將內容貼入對應位置。</p>
+        </div>
+
+        <div class="tip">
+            <strong>💡 為什麼要這樣做？</strong><br>
+            GitHub 是你的免費伺服器，Firebase 是你的雲端資料庫。兩者結合，你的作品就能在各處被即時存取！
+        </div>
+    </div>
+</body>
+</html>
