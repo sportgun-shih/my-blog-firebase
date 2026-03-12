@@ -14,34 +14,32 @@
 <body>
     <header>
         <div class="top-nav">
-            <div class="logo">尋遊桃仔園</div>
+            <a href="index.html" class="logo">尋遊桃仔園</a>
             <nav>
                 <ul class="nav-links">
-                    <li class="dropdown">
-                        <a href="#">首頁</a>
-                    </li>
-                    <li class="dropdown">
-                        <a href="#">認識計畫</a>
-                    </li>
-                    <li><a href="admin.html" class="admin-link">進入後台</a></li>
+                    <li><a href="index.html">首頁</a></li>
+                    <li><a href="#">認識計畫</a></li>
+                    <li><a href="admin.html" class="admin-link">管理員</a></li>
                 </ul>
             </nav>
-            <div class="search-icon">🔍</div>
         </div>
     </header>
 
     <main>
-        <section class="hero">
+        <section class="hero reveal">
             <div class="hero-content">
                 <h1 class="main-title">尋遊桃仔園</h1>
-                <h2 class="sub-title">雲端同步數位人文平台</h2>
+                <p class="sub-title">數位人文跨域人才培育計畫</p>
+                <div style="margin-top: 2rem;">
+                    <span style="display: inline-block; width: 50px; height: 3px; background: var(--secondary-color);"></span>
+                </div>
             </div>
         </section>
 
-        <section class="container">
+        <section class="container reveal">
             <div class="section-header">
-                <h3 class="section-title">最新消息 (雲端讀取)</h3>
-                <a href="#" class="view-more">更多消息 ></a>
+                <h3 class="section-title">最新消息</h3>
+                <a href="#" class="view-more">瀏覽全部 →</a>
             </div>
 
             <div class="news-list" id="posts-container">
@@ -49,13 +47,26 @@
             </div>
         </section>
 
-        <section class="multimedia-section container">
-            <div class="section-header">
-                <h3 class="section-title">精選影音</h3>
-            </div>
-            <div id="latest-video-container" class="media-container video-wrapper">
-                <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" title="YouTube video player" frameborder="0"
-                    allowfullscreen></iframe>
+        <section id="multimedia-section" class="multimedia-section reveal" style="display: none;">
+            <div id="featured-video-container-inner" class="container" style="max-width: 1200px !important;">
+                <div class="featured-video-grid">
+                    <div class="video-info">
+                        <span class="category-tag" id="featured-video-category">精選內容</span>
+                        <h2 id="featured-video-title" style="font-size: 2.5rem; margin: 1rem 0; color: var(--primary-color);"></h2>
+                        <p id="featured-video-excerpt" style="color: #4a5568; margin-bottom: 2rem;"></p>
+                        <a id="featured-video-link" href="#" class="admin-link" style="display: inline-block; text-decoration: none;">閱讀完整文章 →</a>
+                    </div>
+                    <div id="latest-media-container" class="media-container" style="margin: 0; background: transparent; box-shadow: none;">
+                        <!-- 影片容器 -->
+                        <div id="featured-video-wrapper" class="video-wrapper" style="display: none; border-radius: 15px; overflow: hidden; box-shadow: var(--box-shadow);">
+                            <iframe src="" title="YouTube video player" frameborder="0" allowfullscreen></iframe>
+                        </div>
+                        <!-- 圖片容器 -->
+                        <div id="featured-image-wrapper" style="display: none; border-radius: 15px; overflow: hidden; box-shadow: var(--box-shadow);">
+                            <img id="featured-image" src="" alt="Featured Image" style="width: 100%; height: auto; display: block; object-fit: cover; max-height: 450px;">
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
     </main>
@@ -74,11 +85,28 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             loadPostsFromCloud();
+            initReveal();
         });
+
+        function initReveal() {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('active');
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+        }
 
         function loadPostsFromCloud() {
             const postsContainer = document.getElementById('posts-container');
-            const videoFrame = document.querySelector('#latest-video-container iframe');
+            const multimediaSection = document.getElementById('multimedia-section');
+            const videoFrame = document.querySelector('#featured-video-wrapper iframe');
+            const featuredVideoWrapper = document.getElementById('featured-video-wrapper');
+            const featuredImageWrapper = document.getElementById('featured-image-wrapper');
+            const featuredImage = document.getElementById('featured-image');
 
             // 監聽雲端資料庫變化 (Real-time listener)
             db.collection("posts").orderBy("date", "desc").onSnapshot((querySnapshot) => {
@@ -86,11 +114,31 @@
 
                 if (querySnapshot.empty) {
                     postsContainer.innerHTML = '<div class="news-item">尚無最新消息。</div>';
+                    multimediaSection.style.display = 'none';
                     return;
                 }
 
-                let foundVideo = false;
+                let featuredPost = null;
 
+                // 第一輪：尋找設定為「精選」的文章 (優先考慮有影像內容的)
+                querySnapshot.forEach((doc) => {
+                    const post = doc.data();
+                    if (!featuredPost && post.isFeatured && (post.videoUrl || post.imageUrl)) {
+                        featuredPost = { ...post, id: doc.id };
+                    }
+                });
+
+                // 第二輪：如果沒找到手動精選，則找最新的一篇含有影音的文章作為備案
+                if (!featuredPost) {
+                    querySnapshot.forEach((doc) => {
+                        const post = doc.data();
+                        if (!featuredPost && (post.videoUrl || post.imageUrl)) {
+                            featuredPost = { ...post, id: doc.id };
+                        }
+                    });
+                }
+
+                // 第三輪：渲染新聞列表
                 querySnapshot.forEach((doc) => {
                     const post = doc.data();
                     const item = document.createElement('div');
@@ -103,16 +151,38 @@
                         <span class="date">${post.date}</span>
                     `;
                     postsContainer.appendChild(item);
-
-                    // 自動更新首頁大影片為最上方有影片的文章
-                    if (!foundVideo && post.videoUrl) {
-                        const videoId = getYouTubeID(post.videoUrl);
-                        if (videoId && videoFrame) {
-                            videoFrame.src = `https://www.youtube.com/embed/${videoId}`;
-                            foundVideo = true;
-                        }
-                    }
                 });
+
+                // 處理精選區塊顯示
+                if (featuredPost) {
+                    const videoId = getYouTubeID(featuredPost.videoUrl);
+                    
+                    // 重置顯示狀態
+                    featuredVideoWrapper.style.display = 'none';
+                    featuredImageWrapper.style.display = 'none';
+                    
+                    if (videoId) {
+                        // 顯示影片
+                        videoFrame.src = `https://www.youtube.com/embed/${videoId}`;
+                        featuredVideoWrapper.style.display = 'block';
+                    } else if (featuredPost.imageUrl) {
+                        // 顯示圖片
+                        featuredImage.src = featuredPost.imageUrl;
+                        featuredImageWrapper.style.display = 'block';
+                    }
+
+                    // 填入文字資訊
+                    document.getElementById('featured-video-title').textContent = featuredPost.title;
+                    document.getElementById('featured-video-category').textContent = featuredPost.category || '精選內容';
+                    document.getElementById('featured-video-link').href = `post.html?id=${featuredPost.id}`;
+                    
+                    const excerpt = featuredPost.content ? featuredPost.content.replace(/<[^>]*>/g, '').substring(0, 100) + '...' : '';
+                    document.getElementById('featured-video-excerpt').textContent = excerpt;
+
+                    multimediaSection.style.display = 'block';
+                } else {
+                    multimediaSection.style.display = 'none';
+                }
             }, (error) => {
                 postsContainer.innerHTML = '<div class="news-item" style="color:red;">資料載入失敗：' + error.message + '</div>';
             });

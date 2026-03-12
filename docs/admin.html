@@ -93,24 +93,26 @@
 <body>
     <header>
         <div class="top-nav">
-            <div class="logo">尋遊桃仔園 - 管理後台 (FireBase)</div>
+            <a href="index.html" class="logo">尋遊桃仔園</a>
             <nav>
                 <ul class="nav-links">
                     <li><a href="index.html">回前台</a></li>
+                    <li id="logout-item" style="display: none;"><a href="#" onclick="auth.signOut()" class="admin-link" style="background: #666;">安全登出</a></li>
                 </ul>
             </nav>
         </div>
     </header>
 
-    <div class="admin-container">
+    <div class="admin-container reveal active" id="admin-main-content" style="display: none; margin-top: 2rem;">
         <div id="status" class="status-msg"></div>
 
-        <h3>新增消息 / 文章 (Firestore 雲端儲存)</h3>
-        <br>
-        <form id="post-form">
+        <h2 style="color: var(--primary-color); margin-bottom: 2rem; border-bottom: 2px solid var(--secondary-color); padding-bottom: 0.5rem;">管理員主控台</h2>
+        
+        <form id="post-form" style="background: #fdfdfd; padding: 2rem; border-radius: 12px; border: 1px solid #edf2f7;">
+            <h3 style="margin-bottom: 1.5rem;">發佈/編輯文章</h3>
             <div class="form-group" style="display: flex; gap: 1rem;">
                 <div style="flex: 2;">
-                    <label for="title">標題</label>
+                    <label for="title">文章標題</label>
                     <input type="text" id="title" required placeholder="請輸入標題">
                 </div>
                 <div style="flex: 1;">
@@ -125,37 +127,64 @@
                 </div>
             </div>
             <div class="form-group">
-                <label for="date">日期</label>
+                <label for="date">發佈日期</label>
                 <input type="date" id="date" required>
             </div>
-            <div class="form-group">
-                <label for="imageUrl">圖片嵌入網址 (Optional)</label>
-                <input type="url" id="imageUrl" placeholder="HTTPS 圖片網址 (例如：https://.../img.jpg)">
+            <div class="form-group" style="padding: 1rem; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <label style="margin-bottom: 0;">封面圖片設定</label>
+                    <div style="font-size: 0.85rem;">
+                        <input type="radio" id="mode-upload" name="img-mode" value="upload" checked style="width: auto; margin-right: 5px;"> <label for="mode-upload" style="display: inline; cursor: pointer;">上傳檔案</label>
+                        <input type="radio" id="mode-url" name="img-mode" value="url" style="width: auto; margin-left: 10px; margin-right: 5px;"> <label for="mode-url" style="display: inline; cursor: pointer;">貼上網址</label>
+                    </div>
+                </div>
+
+                <!-- 模式 A: 上傳 -->
+                <div id="section-upload">
+                    <input type="file" id="imageFile" accept="image/*" style="padding: 10px; background: #fff;">
+                    <div id="upload-progress-container" style="display: none; margin-top: 10px;">
+                        <div style="width: 100%; background: #edf2f7; height: 8px; border-radius: 4px; overflow: hidden;">
+                            <div id="upload-progress-bar" style="width: 0%; height: 100%; background: var(--secondary-color); transition: width 0.3s;"></div>
+                        </div>
+                        <p id="upload-status-text" style="font-size: 0.8rem; color: #718096; margin-top: 5px;">準備上傳...</p>
+                    </div>
+                    <p style="font-size: 0.75rem; color: #a0aec0; margin-top: 5px;">(注意：若 Firebase 空間未啟用，請改用「貼上網址」模式)</p>
+                </div>
+
+                <!-- 模式 B: 網址 -->
+                <div id="section-url" style="display: none;">
+                    <input type="url" id="imageUrlInput" placeholder="請貼上 HTTPS 圖片網址 (例如 Imgur 或 Google Drive 連結)">
+                </div>
+
+                <input type="hidden" id="imageUrl">
+            </div>
+            <div class="form-group" style="padding: 10px; background: #fffcf0; border: 1px dashed #d4af37; border-radius: 8px; margin-top: 10px;">
+                <label style="display: flex; align-items: center; cursor: pointer; margin-bottom: 0;">
+                    <input type="checkbox" id="isFeatured" style="width: auto; margin-right: 10px;">
+                    <span style="font-size: 0.95rem; font-weight: bold; color: #856404;">⭐ 設定為首頁精選影片 (自動顯示於首頁橫版)</span>
+                </label>
             </div>
             <div class="form-group">
                 <label for="videoUrl">YouTube 影片網址 (Optional)</label>
-                <input type="url" id="videoUrl"
-                    placeholder="https://www.youtube.com/watch?v=... 或 https://youtu.be/...">
+                <input type="url" id="videoUrl" placeholder="YouTube 網址">
             </div>
 
-            <!-- Real-time Preview Area -->
-            <div id="media-preview"
-                style="margin-bottom: 2rem; display: none; padding: 1rem; background: #f8f9fa; border: 1px dashed #ccc; border-radius: 8px;">
-                <p style="font-size: 0.8rem; color: #666; margin-bottom: 0.5rem;">媒體預覽：</p>
+            <div id="media-preview" style="margin-bottom: 2rem; display: none; padding: 1rem; background: #fff; border: 2px dashed #edf2f7; border-radius: 12px;">
+                <p style="font-size: 0.8rem; color: #718096; margin-bottom: 0.5rem;">預覽：</p>
                 <div id="preview-container"></div>
             </div>
 
             <div class="form-group">
-                <label for="content">內容</label>
-                <textarea id="content" rows="8" placeholder="請輸入內文..."></textarea>
+                <label for="content">文章內容</label>
+                <textarea id="content" rows="10" placeholder="支援 HTML 或純文字..."></textarea>
             </div>
-            <button type="submit" id="submit-btn">發佈到雲端</button>
+            <button type="submit" id="submit-btn" class="admin-link" style="width: 100%; border: none; font-size: 1.1rem; padding: 1rem;">同步至雲端資料庫</button>
         </form>
 
-        <div class="posts-mgmt-list">
-            <h3>目前雲端文章列表</h3>
-            <div id="admin-posts-list">
-                <p>載入雲端資料中...</p>
+        <div class="posts-mgmt-list" style="margin-top: 4rem;">
+            <h3 style="margin-bottom: 1.5rem; color: var(--accent-blue);">雲端文章管理</h3>
+            <div id="admin-posts-list" style="display: grid; gap: 1rem;">
+                <p>正在連線至雲端...</p>
             </div>
         </div>
     </div>
@@ -163,71 +192,200 @@
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
 
     <!-- 我們的設定檔 -->
     <script src="firebase-config.js"></script>
+
+    <!-- 登入遮罩層 -->
+    <div id="login-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 10000; display: flex; align-items: center; justify-content: center; flex-direction: column;">
+        <div style="width: 100%; max-width: 400px; padding: 2rem; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-radius: 8px; text-align: center;">
+            <h2 style="margin-bottom: 1.5rem; color: var(--primary-color);">管理員登入</h2>
+            <div class="form-group" style="text-align: left;">
+                <label for="login-email">電子郵件</label>
+                <input type="email" id="login-email" placeholder="email@example.com">
+            </div>
+            <div class="form-group" style="text-align: left;">
+                <label for="login-password">密碼</label>
+                <input type="password" id="login-password" placeholder="請輸入密碼">
+            </div>
+            <button id="login-btn" style="width: 100%;">登入</button>
+            <p id="login-error" style="color: red; margin-top: 1rem; font-size: 0.9rem; display: none;"></p>
+        </div>
+    </div>
 
     <script>
         let editingPostId = null;
 
         document.addEventListener('DOMContentLoaded', () => {
-            // 檢查 Firebase 是否正確初始化
-            try {
-                if (!firebase.apps.length) {
-                    showStatus('Firebase 未正確初始化，請檢查 firebase-config.js 中的設定', 'error');
-                } else {
+            // 監聽登入狀態
+            auth.onAuthStateChanged(user => {
+                const overlay = document.getElementById('login-overlay');
+                const content = document.getElementById('admin-main-content');
+                const logoutBtn = document.getElementById('logout-item');
+                
+                if (user) {
+                    overlay.style.display = 'none';
+                    content.style.display = 'block';
+                    logoutBtn.style.display = 'block';
                     renderAdminPosts();
+                } else {
+                    overlay.style.display = 'flex';
+                    content.style.display = 'none';
+                    logoutBtn.style.display = 'none';
                 }
-            } catch (e) {
-                showStatus('發生錯誤：' + e.message, 'error');
+            });
+
+            // 登入功能
+            document.getElementById('login-btn').addEventListener('click', async () => {
+                const email = document.getElementById('login-email').value;
+                const password = document.getElementById('login-password').value;
+                const errorMsg = document.getElementById('login-error');
+                
+                try {
+                    await auth.signInWithEmailAndPassword(email, password);
+                } catch (err) {
+                    errorMsg.textContent = '登入失敗：' + err.message;
+                    errorMsg.style.display = 'block';
+                }
+            });
+            
+            // 檢查 Firebase 是否正確初始化
+            if (!firebase.apps.length) {
+                showStatus('Firebase 未正確初始化，請檢查 firebase-config.js 中的設定', 'error');
             }
 
-            // Preview logic
-            const imgInput = document.getElementById('imageUrl');
+            // 模式切換邏輯
+            const modeUpload = document.getElementById('mode-upload');
+            const modeUrl = document.getElementById('mode-url');
+            const secUpload = document.getElementById('section-upload');
+            const secUrl = document.getElementById('section-url');
+            const imgHiddenInput = document.getElementById('imageUrl');
+            const imgUrlInput = document.getElementById('imageUrlInput');
             const videoInput = document.getElementById('videoUrl');
 
-            imgInput.addEventListener('input', updatePreview);
+            modeUpload.addEventListener('change', () => {
+                secUpload.style.display = 'block';
+                secUrl.style.display = 'none';
+            });
+            modeUrl.addEventListener('change', () => {
+                secUpload.style.display = 'none';
+                secUrl.style.display = 'block';
+            });
+
+            // Preview logic
+            imgUrlInput.addEventListener('input', () => {
+                imgHiddenInput.value = imgUrlInput.value;
+                updatePreview();
+            });
             videoInput.addEventListener('input', updatePreview);
+
+            // 當選擇檔案時，立即顯示本地預覽
+            document.getElementById('imageFile').addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                const previewSection = document.getElementById('media-preview');
+                const previewContainer = document.getElementById('preview-container');
+
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        previewSection.style.display = 'block';
+                        previewContainer.innerHTML = `<p style="font-size:0.8rem; color:green; margin-bottom:0.5rem;">[準備上傳的新圖片]</p>
+                                                     <img src="${event.target.result}" style="max-width:300px; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.1);">`;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
 
             document.getElementById('post-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const btn = document.getElementById('submit-btn');
                 btn.disabled = true;
-                btn.textContent = '傳送中...';
+                btn.textContent = '處理中...';
 
                 const title = document.getElementById('title').value;
                 const category = document.getElementById('category').value;
                 const date = document.getElementById('date').value;
-                const imageUrl = document.getElementById('imageUrl').value;
                 const videoUrl = document.getElementById('videoUrl').value;
                 const content = document.getElementById('content').value;
+                const isFeatured = document.getElementById('isFeatured').checked;
+                const imageFile = document.getElementById('imageFile').files[0];
+                const selectedMode = document.querySelector('input[name="img-mode"]:checked').value;
+                let imageUrl = document.getElementById('imageUrl').value;
 
                 try {
+                    // 如果選擇「上傳模式」且有選擇新檔案
+                    if (selectedMode === 'upload' && imageFile) {
+                        const progressContainer = document.getElementById('upload-progress-container');
+                        const progressBar = document.getElementById('upload-progress-bar');
+                        const statusText = document.getElementById('upload-status-text');
+                        
+                        progressContainer.style.display = 'block';
+                        statusText.textContent = '正在準備上傳圖片...';
+                        
+                        // 移除檔名中的特殊字元，避免路徑錯誤
+                        const safeFileName = imageFile.name.replace(/[^\x00-\x7F]/g, "").replace(/\s+/g, '_') || "image_" + Date.now();
+                        const fileName = `${Date.now()}_${safeFileName}`;
+                        const storageRef = storage.ref(`posts-images/${fileName}`);
+                        const uploadTask = storageRef.put(imageFile);
+
+                        // 封裝成 Promise 以便 await
+                        imageUrl = await new Promise((resolve, reject) => {
+                            uploadTask.on('state_changed', 
+                                (snapshot) => {
+                                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                                    progressBar.style.width = progress + '%';
+                                    statusText.textContent = `已上傳: ${Math.round(progress)}%`;
+                                }, 
+                                (error) => {
+                                    console.error("Upload error object:", error);
+                                    let errorDetail = error.message;
+                                    if (error.code === 'storage/unauthorized') {
+                                        errorDetail = "權限不足 (可能尚未設定 Storage Rules)";
+                                    } else if (error.code === 'storage/retry-limit-exceeded') {
+                                        errorDetail = "連線逾時，請檢查網路";
+                                    }
+                                    reject(new Error(errorDetail));
+                                }, 
+                                () => {
+                                    statusText.textContent = '正在取得圖片連結...';
+                                    uploadTask.snapshot.ref.getDownloadURL()
+                                        .then(downloadURL => resolve(downloadURL))
+                                        .catch(err => reject(err));
+                                }
+                            );
+                        });
+                        statusText.textContent = '圖片上傳完成！';
+                    }
+
                     if (editingPostId) {
                         // 更新現有文章 (Update)
                         await db.collection("posts").doc(editingPostId).update({
-                            title, category, date, imageUrl, videoUrl, content,
+                            title, category, date, imageUrl, videoUrl, content, isFeatured,
                             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                         });
                         editingPostId = null;
-                        btn.textContent = '發佈到雲端';
+                        btn.textContent = '同步至雲端資料庫';
                     } else {
                         // 建立新文章 (Add)
                         await db.collection("posts").add({
-                            title, category, date, imageUrl, videoUrl, content,
+                            title, category, date, imageUrl, videoUrl, content, isFeatured,
                             createdAt: firebase.firestore.FieldValue.serverTimestamp()
                         });
                     }
 
                     e.target.reset();
+                    document.getElementById('upload-progress-container').style.display = 'none';
+                    document.getElementById('imageUrl').value = '';
                     updatePreview();
                     showStatus('儲存成功！資料已同步至雲端', 'success');
                 } catch (err) {
                     console.error("Save error:", err);
-                    showStatus('儲存失敗：' + err.message, 'error');
+                    showStatus('處理失敗：' + err.message, 'error');
                 } finally {
                     btn.disabled = false;
-                    if (!editingPostId) btn.textContent = '發佈到雲端';
+                    if (!editingPostId) btn.textContent = '同步至雲端資料庫';
                 }
             });
         });
@@ -275,12 +433,16 @@
                 if (doc.exists) {
                     const post = doc.data();
                     editingPostId = id;
+                    document.getElementById('imageFile').value = '';
+                    document.getElementById('upload-progress-container').style.display = 'none';
                     document.getElementById('title').value = post.title;
                     document.getElementById('category').value = post.category || '';
                     document.getElementById('date').value = post.date;
                     document.getElementById('imageUrl').value = post.imageUrl || '';
+                    document.getElementById('imageUrlInput').value = post.imageUrl || '';
                     document.getElementById('videoUrl').value = post.videoUrl || '';
                     document.getElementById('content').value = post.content || '';
+                    document.getElementById('isFeatured').checked = post.isFeatured || false;
 
                     document.getElementById('submit-btn').textContent = '儲存更新內容';
                     updatePreview();
@@ -307,6 +469,10 @@
             const videoUrl = document.getElementById('videoUrl').value.trim();
             const previewSection = document.getElementById('media-preview');
             const previewContainer = document.getElementById('preview-container');
+            const fileInput = document.getElementById('imageFile');
+
+            // 如果有選擇新檔案，優先由 change 事件處理預覽
+            if (fileInput.files && fileInput.files[0]) return;
 
             if (imageUrl === '' && videoUrl === '') {
                 previewSection.style.display = 'none';
@@ -317,7 +483,10 @@
             let previewHtml = '';
 
             if (imageUrl) {
-                previewHtml += `<div style="margin-bottom:1rem;"><img src="${imageUrl}" style="max-width:200px; border-radius:4px; border:1px solid #ddd;" onerror="this.outerHTML='<p style=\'color:red; font-size:0.8rem;\'>圖片網址無效</p>'"></div>`;
+                previewHtml += `<div style="margin-bottom:1rem;">
+                                    <p style="font-size:0.8rem; color:#666; margin-bottom:0.5rem;">[目前的封面圖片]</p>
+                                    <img src="${imageUrl}" style="max-width:200px; border-radius:4px; border:1px solid #ddd;" onerror="this.outerHTML='<p style=\'color:red; font-size:0.8rem;\'>圖片載入失敗</p>'">
+                                </div>`;
             }
 
             if (videoUrl) {
