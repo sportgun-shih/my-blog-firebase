@@ -93,24 +93,26 @@
 <body>
     <header>
         <div class="top-nav">
-            <div class="logo">尋遊桃仔園 - 管理後台 (FireBase)</div>
+            <a href="index.html" class="logo">尋遊桃仔園</a>
             <nav>
                 <ul class="nav-links">
                     <li><a href="index.html">回前台</a></li>
+                    <li id="logout-item" style="display: none;"><a href="#" onclick="auth.signOut()" class="admin-link" style="background: #666;">安全登出</a></li>
                 </ul>
             </nav>
         </div>
     </header>
 
-    <div class="admin-container" id="admin-main-content" style="display: none;">
+    <div class="admin-container reveal active" id="admin-main-content" style="display: none; margin-top: 2rem;">
         <div id="status" class="status-msg"></div>
 
-        <h3>新增消息 / 文章 (Firestore 雲端儲存)</h3>
-        <br>
-        <form id="post-form">
+        <h2 style="color: var(--primary-color); margin-bottom: 2rem; border-bottom: 2px solid var(--secondary-color); padding-bottom: 0.5rem;">管理員主控台</h2>
+        
+        <form id="post-form" style="background: #fdfdfd; padding: 2rem; border-radius: 12px; border: 1px solid #edf2f7;">
+            <h3 style="margin-bottom: 1.5rem;">發佈/編輯文章</h3>
             <div class="form-group" style="display: flex; gap: 1rem;">
                 <div style="flex: 2;">
-                    <label for="title">標題</label>
+                    <label for="title">文章標題</label>
                     <input type="text" id="title" required placeholder="請輸入標題">
                 </div>
                 <div style="flex: 1;">
@@ -125,40 +127,34 @@
                 </div>
             </div>
             <div class="form-group">
-                <label for="date">日期</label>
+                <label for="date">發佈日期</label>
                 <input type="date" id="date" required>
             </div>
             <div class="form-group">
-                <label for="imageUrl">圖片嵌入網址 (Optional)</label>
-                <input type="url" id="imageUrl" placeholder="HTTPS 圖片網址 (例如：https://.../img.jpg)">
+                <label for="imageUrl">封面圖片網址 (Optional)</label>
+                <input type="url" id="imageUrl" placeholder="HTTPS 圖片網址">
             </div>
             <div class="form-group">
                 <label for="videoUrl">YouTube 影片網址 (Optional)</label>
-                <input type="url" id="videoUrl"
-                    placeholder="https://www.youtube.com/watch?v=... 或 https://youtu.be/...">
+                <input type="url" id="videoUrl" placeholder="YouTube 網址">
             </div>
 
-            <!-- Real-time Preview Area -->
-            <div id="media-preview"
-                style="margin-bottom: 2rem; display: none; padding: 1rem; background: #f8f9fa; border: 1px dashed #ccc; border-radius: 8px;">
-                <p style="font-size: 0.8rem; color: #666; margin-bottom: 0.5rem;">媒體預覽：</p>
+            <div id="media-preview" style="margin-bottom: 2rem; display: none; padding: 1rem; background: #fff; border: 2px dashed #edf2f7; border-radius: 12px;">
+                <p style="font-size: 0.8rem; color: #718096; margin-bottom: 0.5rem;">預覽：</p>
                 <div id="preview-container"></div>
             </div>
 
             <div class="form-group">
-                <label for="content">內容</label>
-                <textarea id="content" rows="8" placeholder="請輸入內文..."></textarea>
+                <label for="content">文章內容</label>
+                <textarea id="content" rows="10" placeholder="支援 HTML 或純文字..."></textarea>
             </div>
-            <button type="submit" id="submit-btn">發佈到雲端</button>
+            <button type="submit" id="submit-btn" class="admin-link" style="width: 100%; border: none; font-size: 1.1rem; padding: 1rem;">同步至雲端資料庫</button>
         </form>
 
-        <div class="posts-mgmt-list" id="mgmt-area">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                <h3>目前雲端文章列表</h3>
-                <button onclick="auth.signOut()" style="background-color: #666; padding: 0.4rem 1rem; font-size: 0.8rem;">登出</button>
-            </div>
-            <div id="admin-posts-list">
-                <p>載入雲端資料中...</p>
+        <div class="posts-mgmt-list" style="margin-top: 4rem;">
+            <h3 style="margin-bottom: 1.5rem; color: var(--accent-blue);">雲端文章管理</h3>
+            <div id="admin-posts-list" style="display: grid; gap: 1rem;">
+                <p>正在連線至雲端...</p>
             </div>
         </div>
     </div>
@@ -196,14 +192,17 @@
             auth.onAuthStateChanged(user => {
                 const overlay = document.getElementById('login-overlay');
                 const content = document.getElementById('admin-main-content');
+                const logoutBtn = document.getElementById('logout-item');
                 
                 if (user) {
                     overlay.style.display = 'none';
                     content.style.display = 'block';
+                    logoutBtn.style.display = 'block';
                     renderAdminPosts();
                 } else {
                     overlay.style.display = 'flex';
                     content.style.display = 'none';
+                    logoutBtn.style.display = 'none';
                 }
             });
 
