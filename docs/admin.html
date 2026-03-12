@@ -130,15 +130,32 @@
                 <label for="date">發佈日期</label>
                 <input type="date" id="date" required>
             </div>
-            <div class="form-group">
-                <label for="imageFile">上傳封面圖片 (Optional)</label>
-                <input type="file" id="imageFile" accept="image/*" style="padding: 10px; background: #fff;">
-                <div id="upload-progress-container" style="display: none; margin-top: 10px;">
-                    <div style="width: 100%; background: #edf2f7; height: 8px; border-radius: 4px; overflow: hidden;">
-                        <div id="upload-progress-bar" style="width: 0%; height: 100%; background: var(--secondary-color); transition: width 0.3s;"></div>
+            <div class="form-group" style="padding: 1rem; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <label style="margin-bottom: 0;">封面圖片設定</label>
+                    <div style="font-size: 0.85rem;">
+                        <input type="radio" id="mode-upload" name="img-mode" value="upload" checked style="width: auto; margin-right: 5px;"> <label for="mode-upload" style="display: inline; cursor: pointer;">上傳檔案</label>
+                        <input type="radio" id="mode-url" name="img-mode" value="url" style="width: auto; margin-left: 10px; margin-right: 5px;"> <label for="mode-url" style="display: inline; cursor: pointer;">貼上網址</label>
                     </div>
-                    <p id="upload-status-text" style="font-size: 0.8rem; color: #718096; margin-top: 5px;">準備上傳...</p>
                 </div>
+
+                <!-- 模式 A: 上傳 -->
+                <div id="section-upload">
+                    <input type="file" id="imageFile" accept="image/*" style="padding: 10px; background: #fff;">
+                    <div id="upload-progress-container" style="display: none; margin-top: 10px;">
+                        <div style="width: 100%; background: #edf2f7; height: 8px; border-radius: 4px; overflow: hidden;">
+                            <div id="upload-progress-bar" style="width: 0%; height: 100%; background: var(--secondary-color); transition: width 0.3s;"></div>
+                        </div>
+                        <p id="upload-status-text" style="font-size: 0.8rem; color: #718096; margin-top: 5px;">準備上傳...</p>
+                    </div>
+                    <p style="font-size: 0.75rem; color: #a0aec0; margin-top: 5px;">(注意：若 Firebase 空間未啟用，請改用「貼上網址」模式)</p>
+                </div>
+
+                <!-- 模式 B: 網址 -->
+                <div id="section-url" style="display: none;">
+                    <input type="url" id="imageUrlInput" placeholder="請貼上 HTTPS 圖片網址 (例如 Imgur 或 Google Drive 連結)">
+                </div>
+
                 <input type="hidden" id="imageUrl">
             </div>
             <div class="form-group">
@@ -233,11 +250,29 @@
                 showStatus('Firebase 未正確初始化，請檢查 firebase-config.js 中的設定', 'error');
             }
 
-            // Preview logic
-            const imgInput = document.getElementById('imageUrl');
+            // 模式切換邏輯
+            const modeUpload = document.getElementById('mode-upload');
+            const modeUrl = document.getElementById('mode-url');
+            const secUpload = document.getElementById('section-upload');
+            const secUrl = document.getElementById('section-url');
+            const imgHiddenInput = document.getElementById('imageUrl');
+            const imgUrlInput = document.getElementById('imageUrlInput');
             const videoInput = document.getElementById('videoUrl');
 
-            imgInput.addEventListener('input', updatePreview);
+            modeUpload.addEventListener('change', () => {
+                secUpload.style.display = 'block';
+                secUrl.style.display = 'none';
+            });
+            modeUrl.addEventListener('change', () => {
+                secUpload.style.display = 'none';
+                secUrl.style.display = 'block';
+            });
+
+            // Preview logic
+            imgUrlInput.addEventListener('input', () => {
+                imgHiddenInput.value = imgUrlInput.value;
+                updatePreview();
+            });
             videoInput.addEventListener('input', updatePreview);
 
             // 當選擇檔案時，立即顯示本地預覽
@@ -269,19 +304,22 @@
                 const videoUrl = document.getElementById('videoUrl').value;
                 const content = document.getElementById('content').value;
                 const imageFile = document.getElementById('imageFile').files[0];
+                const selectedMode = document.querySelector('input[name="img-mode"]:checked').value;
                 let imageUrl = document.getElementById('imageUrl').value;
 
                 try {
-                    // 如果有選擇新檔案，則先執行上傳
-                    if (imageFile) {
+                    // 如果選擇「上傳模式」且有選擇新檔案
+                    if (selectedMode === 'upload' && imageFile) {
                         const progressContainer = document.getElementById('upload-progress-container');
                         const progressBar = document.getElementById('upload-progress-bar');
                         const statusText = document.getElementById('upload-status-text');
                         
                         progressContainer.style.display = 'block';
-                        statusText.textContent = '正在上傳圖片...';
+                        statusText.textContent = '正在準備上傳圖片...';
                         
-                        const fileName = `${Date.now()}_${imageFile.name}`;
+                        // 移除檔名中的特殊字元，避免路徑錯誤
+                        const safeFileName = imageFile.name.replace(/[^\x00-\x7F]/g, "").replace(/\s+/g, '_') || "image_" + Date.now();
+                        const fileName = `${Date.now()}_${safeFileName}`;
                         const storageRef = storage.ref(`posts-images/${fileName}`);
                         const uploadTask = storageRef.put(imageFile);
 
@@ -291,13 +329,23 @@
                                 (snapshot) => {
                                     const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
                                     progressBar.style.width = progress + '%';
+                                    statusText.textContent = `已上傳: ${Math.round(progress)}%`;
                                 }, 
                                 (error) => {
-                                    reject(error);
+                                    console.error("Upload error object:", error);
+                                    let errorDetail = error.message;
+                                    if (error.code === 'storage/unauthorized') {
+                                        errorDetail = "權限不足 (可能尚未設定 Storage Rules)";
+                                    } else if (error.code === 'storage/retry-limit-exceeded') {
+                                        errorDetail = "連線逾時，請檢查網路";
+                                    }
+                                    reject(new Error(errorDetail));
                                 }, 
-                                async () => {
-                                    const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
-                                    resolve(downloadURL);
+                                () => {
+                                    statusText.textContent = '正在取得圖片連結...';
+                                    uploadTask.snapshot.ref.getDownloadURL()
+                                        .then(downloadURL => resolve(downloadURL))
+                                        .catch(err => reject(err));
                                 }
                             );
                         });
@@ -384,6 +432,7 @@
                     document.getElementById('category').value = post.category || '';
                     document.getElementById('date').value = post.date;
                     document.getElementById('imageUrl').value = post.imageUrl || '';
+                    document.getElementById('imageUrlInput').value = post.imageUrl || '';
                     document.getElementById('videoUrl').value = post.videoUrl || '';
                     document.getElementById('content').value = post.content || '';
 
