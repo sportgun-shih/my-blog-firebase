@@ -47,14 +47,13 @@
             </div>
         </section>
 
-        <section class="multimedia-section reveal">
+        <section id="multimedia-section" class="multimedia-section reveal" style="display: none;">
             <div class="container" style="margin: 0 auto; padding: 0 2rem;">
                 <div class="section-header">
                     <h3 class="section-title">精選影音</h3>
                 </div>
                 <div id="latest-video-container" class="media-container video-wrapper">
-                    <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" title="YouTube video player" frameborder="0"
-                        allowfullscreen></iframe>
+                    <iframe src="" title="YouTube video player" frameborder="0" allowfullscreen></iframe>
                 </div>
             </div>
         </section>
@@ -103,6 +102,7 @@
                 }
 
                 let foundVideo = false;
+                const multimediaSection = document.getElementById('multimedia-section');
 
                 querySnapshot.forEach((doc) => {
                     const post = doc.data();
@@ -122,10 +122,15 @@
                         const videoId = getYouTubeID(post.videoUrl);
                         if (videoId && videoFrame) {
                             videoFrame.src = `https://www.youtube.com/embed/${videoId}`;
+                            multimediaSection.style.display = 'block';
                             foundVideo = true;
                         }
                     }
                 });
+
+                if (!foundVideo) {
+                    multimediaSection.style.display = 'none';
+                }
             }, (error) => {
                 postsContainer.innerHTML = '<div class="news-item" style="color:red;">資料載入失敗：' + error.message + '</div>';
             });
