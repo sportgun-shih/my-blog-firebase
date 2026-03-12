@@ -84,7 +84,7 @@
 <body>
     <header>
         <div class="top-nav">
-            <div class="logo">尋遊桃仔園</div>
+            <a href="index.html" class="logo">尋遊桃仔園</a>
             <nav>
                 <ul class="nav-links">
                     <li><a href="index.html">首頁</a></li>
@@ -94,7 +94,7 @@
         </div>
     </header>
 
-    <main class="post-detail">
+    <main class="post-detail reveal">
         <a href="index.html" class="back-btn">← 返回列表</a>
         <div id="post-display">
             <h1>載入中...</h1>
@@ -113,6 +113,11 @@
             const urlParams = new URLSearchParams(window.location.search);
             const postId = urlParams.get('id');
             const postDisplay = document.getElementById('post-display');
+            
+            // 啟動進場動畫
+            setTimeout(() => {
+                document.querySelector('.reveal').classList.add('active');
+            }, 100);
 
             if (!postId) {
                 postDisplay.innerHTML = '<h1>參數錯誤：未指定文章 ID</h1>';

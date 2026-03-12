@@ -102,7 +102,7 @@
         </div>
     </header>
 
-    <div class="admin-container">
+    <div class="admin-container" id="admin-main-content" style="display: none;">
         <div id="status" class="status-msg"></div>
 
         <h3>新增消息 / 文章 (Firestore 雲端儲存)</h3>
@@ -152,8 +152,11 @@
             <button type="submit" id="submit-btn">發佈到雲端</button>
         </form>
 
-        <div class="posts-mgmt-list">
-            <h3>目前雲端文章列表</h3>
+        <div class="posts-mgmt-list" id="mgmt-area">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h3>目前雲端文章列表</h3>
+                <button onclick="auth.signOut()" style="background-color: #666; padding: 0.4rem 1rem; font-size: 0.8rem;">登出</button>
+            </div>
             <div id="admin-posts-list">
                 <p>載入雲端資料中...</p>
             </div>
@@ -163,23 +166,64 @@
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 
     <!-- 我們的設定檔 -->
     <script src="firebase-config.js"></script>
+
+    <!-- 登入遮罩層 -->
+    <div id="login-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 10000; display: flex; align-items: center; justify-content: center; flex-direction: column;">
+        <div style="width: 100%; max-width: 400px; padding: 2rem; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-radius: 8px; text-align: center;">
+            <h2 style="margin-bottom: 1.5rem; color: var(--primary-color);">管理員登入</h2>
+            <div class="form-group" style="text-align: left;">
+                <label for="login-email">電子郵件</label>
+                <input type="email" id="login-email" placeholder="email@example.com">
+            </div>
+            <div class="form-group" style="text-align: left;">
+                <label for="login-password">密碼</label>
+                <input type="password" id="login-password" placeholder="請輸入密碼">
+            </div>
+            <button id="login-btn" style="width: 100%;">登入</button>
+            <p id="login-error" style="color: red; margin-top: 1rem; font-size: 0.9rem; display: none;"></p>
+        </div>
+    </div>
 
     <script>
         let editingPostId = null;
 
         document.addEventListener('DOMContentLoaded', () => {
-            // 檢查 Firebase 是否正確初始化
-            try {
-                if (!firebase.apps.length) {
-                    showStatus('Firebase 未正確初始化，請檢查 firebase-config.js 中的設定', 'error');
-                } else {
+            // 監聽登入狀態
+            auth.onAuthStateChanged(user => {
+                const overlay = document.getElementById('login-overlay');
+                const content = document.getElementById('admin-main-content');
+                
+                if (user) {
+                    overlay.style.display = 'none';
+                    content.style.display = 'block';
                     renderAdminPosts();
+                } else {
+                    overlay.style.display = 'flex';
+                    content.style.display = 'none';
                 }
-            } catch (e) {
-                showStatus('發生錯誤：' + e.message, 'error');
+            });
+
+            // 登入功能
+            document.getElementById('login-btn').addEventListener('click', async () => {
+                const email = document.getElementById('login-email').value;
+                const password = document.getElementById('login-password').value;
+                const errorMsg = document.getElementById('login-error');
+                
+                try {
+                    await auth.signInWithEmailAndPassword(email, password);
+                } catch (err) {
+                    errorMsg.textContent = '登入失敗：' + err.message;
+                    errorMsg.style.display = 'block';
+                }
+            });
+            
+            // 檢查 Firebase 是否正確初始化
+            if (!firebase.apps.length) {
+                showStatus('Firebase 未正確初始化，請檢查 firebase-config.js 中的設定', 'error');
             }
 
             // Preview logic

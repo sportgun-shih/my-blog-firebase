@@ -17,3 +17,6 @@ firebase.initializeApp(firebaseConfig);
 
 // 取得資料庫實例 (Firestore)
 const db = firebase.firestore();
+
+// 取得認證管理實例 (Authentication)
+const auth = firebase.auth();

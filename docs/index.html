@@ -14,34 +14,32 @@
 <body>
     <header>
         <div class="top-nav">
-            <div class="logo">尋遊桃仔園</div>
+            <a href="index.html" class="logo">尋遊桃仔園</a>
             <nav>
                 <ul class="nav-links">
-                    <li class="dropdown">
-                        <a href="#">首頁</a>
-                    </li>
-                    <li class="dropdown">
-                        <a href="#">認識計畫</a>
-                    </li>
-                    <li><a href="admin.html" class="admin-link">進入後台</a></li>
+                    <li><a href="index.html">首頁</a></li>
+                    <li><a href="#">認識計畫</a></li>
+                    <li><a href="admin.html" class="admin-link">管理員</a></li>
                 </ul>
             </nav>
-            <div class="search-icon">🔍</div>
         </div>
     </header>
 
     <main>
-        <section class="hero">
+        <section class="hero reveal">
             <div class="hero-content">
                 <h1 class="main-title">尋遊桃仔園</h1>
-                <h2 class="sub-title">雲端同步數位人文平台</h2>
+                <p class="sub-title">數位人文跨域人才培育計畫</p>
+                <div style="margin-top: 2rem;">
+                    <span style="display: inline-block; width: 50px; height: 3px; background: var(--secondary-color);"></span>
+                </div>
             </div>
         </section>
 
-        <section class="container">
+        <section class="container reveal">
             <div class="section-header">
-                <h3 class="section-title">最新消息 (雲端讀取)</h3>
-                <a href="#" class="view-more">更多消息 ></a>
+                <h3 class="section-title">最新消息</h3>
+                <a href="#" class="view-more">瀏覽全部 →</a>
             </div>
 
             <div class="news-list" id="posts-container">
@@ -49,13 +47,15 @@
             </div>
         </section>
 
-        <section class="multimedia-section container">
-            <div class="section-header">
-                <h3 class="section-title">精選影音</h3>
-            </div>
-            <div id="latest-video-container" class="media-container video-wrapper">
-                <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" title="YouTube video player" frameborder="0"
-                    allowfullscreen></iframe>
+        <section class="multimedia-section reveal">
+            <div class="container" style="margin: 0 auto; padding: 0 2rem;">
+                <div class="section-header">
+                    <h3 class="section-title">精選影音</h3>
+                </div>
+                <div id="latest-video-container" class="media-container video-wrapper">
+                    <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" title="YouTube video player" frameborder="0"
+                        allowfullscreen></iframe>
+                </div>
             </div>
         </section>
     </main>
@@ -74,7 +74,20 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             loadPostsFromCloud();
+            initReveal();
         });
+
+        function initReveal() {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('active');
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+        }
 
         function loadPostsFromCloud() {
             const postsContainer = document.getElementById('posts-container');
