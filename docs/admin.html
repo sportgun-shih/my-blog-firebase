@@ -131,8 +131,15 @@
                 <input type="date" id="date" required>
             </div>
             <div class="form-group">
-                <label for="imageUrl">封面圖片網址 (Optional)</label>
-                <input type="url" id="imageUrl" placeholder="HTTPS 圖片網址">
+                <label for="imageFile">上傳封面圖片 (Optional)</label>
+                <input type="file" id="imageFile" accept="image/*" style="padding: 10px; background: #fff;">
+                <div id="upload-progress-container" style="display: none; margin-top: 10px;">
+                    <div style="width: 100%; background: #edf2f7; height: 8px; border-radius: 4px; overflow: hidden;">
+                        <div id="upload-progress-bar" style="width: 0%; height: 100%; background: var(--secondary-color); transition: width 0.3s;"></div>
+                    </div>
+                    <p id="upload-status-text" style="font-size: 0.8rem; color: #718096; margin-top: 5px;">準備上傳...</p>
+                </div>
+                <input type="hidden" id="imageUrl">
             </div>
             <div class="form-group">
                 <label for="videoUrl">YouTube 影片網址 (Optional)</label>
@@ -163,6 +170,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
 
     <!-- 我們的設定檔 -->
     <script src="firebase-config.js"></script>
@@ -236,16 +244,49 @@
                 e.preventDefault();
                 const btn = document.getElementById('submit-btn');
                 btn.disabled = true;
-                btn.textContent = '傳送中...';
+                btn.textContent = '處理中...';
 
                 const title = document.getElementById('title').value;
                 const category = document.getElementById('category').value;
                 const date = document.getElementById('date').value;
-                const imageUrl = document.getElementById('imageUrl').value;
                 const videoUrl = document.getElementById('videoUrl').value;
                 const content = document.getElementById('content').value;
+                const imageFile = document.getElementById('imageFile').files[0];
+                let imageUrl = document.getElementById('imageUrl').value;
 
                 try {
+                    // 如果有選擇新檔案，則先執行上傳
+                    if (imageFile) {
+                        const progressContainer = document.getElementById('upload-progress-container');
+                        const progressBar = document.getElementById('upload-progress-bar');
+                        const statusText = document.getElementById('upload-status-text');
+                        
+                        progressContainer.style.display = 'block';
+                        statusText.textContent = '正在上傳圖片...';
+                        
+                        const fileName = `${Date.now()}_${imageFile.name}`;
+                        const storageRef = storage.ref(`posts-images/${fileName}`);
+                        const uploadTask = storageRef.put(imageFile);
+
+                        // 封裝成 Promise 以便 await
+                        imageUrl = await new Promise((resolve, reject) => {
+                            uploadTask.on('state_changed', 
+                                (snapshot) => {
+                                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                                    progressBar.style.width = progress + '%';
+                                }, 
+                                (error) => {
+                                    reject(error);
+                                }, 
+                                async () => {
+                                    const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
+                                    resolve(downloadURL);
+                                }
+                            );
+                        });
+                        statusText.textContent = '圖片上傳完成！';
+                    }
+
                     if (editingPostId) {
                         // 更新現有文章 (Update)
                         await db.collection("posts").doc(editingPostId).update({
@@ -253,7 +294,7 @@
                             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                         });
                         editingPostId = null;
-                        btn.textContent = '發佈到雲端';
+                        btn.textContent = '同步至雲端資料庫';
                     } else {
                         // 建立新文章 (Add)
                         await db.collection("posts").add({
@@ -263,14 +304,16 @@
                     }
 
                     e.target.reset();
+                    document.getElementById('upload-progress-container').style.display = 'none';
+                    document.getElementById('imageUrl').value = '';
                     updatePreview();
                     showStatus('儲存成功！資料已同步至雲端', 'success');
                 } catch (err) {
                     console.error("Save error:", err);
-                    showStatus('儲存失敗：' + err.message, 'error');
+                    showStatus('處理失敗：' + err.message, 'error');
                 } finally {
                     btn.disabled = false;
-                    if (!editingPostId) btn.textContent = '發佈到雲端';
+                    if (!editingPostId) btn.textContent = '同步至雲端資料庫';
                 }
             });
         });

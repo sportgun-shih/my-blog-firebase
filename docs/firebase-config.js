@@ -20,3 +20,6 @@ const db = firebase.firestore();
 
 // 取得認證管理實例 (Authentication)
 const auth = firebase.auth();
+
+// 取得雲端儲存實例 (Storage)
+const storage = firebase.storage();
