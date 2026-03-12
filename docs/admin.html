@@ -240,6 +240,23 @@
             imgInput.addEventListener('input', updatePreview);
             videoInput.addEventListener('input', updatePreview);
 
+            // 當選擇檔案時，立即顯示本地預覽
+            document.getElementById('imageFile').addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                const previewSection = document.getElementById('media-preview');
+                const previewContainer = document.getElementById('preview-container');
+
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        previewSection.style.display = 'block';
+                        previewContainer.innerHTML = `<p style="font-size:0.8rem; color:green; margin-bottom:0.5rem;">[準備上傳的新圖片]</p>
+                                                     <img src="${event.target.result}" style="max-width:300px; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.1);">`;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
             document.getElementById('post-form').addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const btn = document.getElementById('submit-btn');
@@ -361,6 +378,8 @@
                 if (doc.exists) {
                     const post = doc.data();
                     editingPostId = id;
+                    document.getElementById('imageFile').value = '';
+                    document.getElementById('upload-progress-container').style.display = 'none';
                     document.getElementById('title').value = post.title;
                     document.getElementById('category').value = post.category || '';
                     document.getElementById('date').value = post.date;
@@ -393,6 +412,10 @@
             const videoUrl = document.getElementById('videoUrl').value.trim();
             const previewSection = document.getElementById('media-preview');
             const previewContainer = document.getElementById('preview-container');
+            const fileInput = document.getElementById('imageFile');
+
+            // 如果有選擇新檔案，優先由 change 事件處理預覽
+            if (fileInput.files && fileInput.files[0]) return;
 
             if (imageUrl === '' && videoUrl === '') {
                 previewSection.style.display = 'none';
@@ -403,7 +426,10 @@
             let previewHtml = '';
 
             if (imageUrl) {
-                previewHtml += `<div style="margin-bottom:1rem;"><img src="${imageUrl}" style="max-width:200px; border-radius:4px; border:1px solid #ddd;" onerror="this.outerHTML='<p style=\'color:red; font-size:0.8rem;\'>圖片網址無效</p>'"></div>`;
+                previewHtml += `<div style="margin-bottom:1rem;">
+                                    <p style="font-size:0.8rem; color:#666; margin-bottom:0.5rem;">[目前的封面圖片]</p>
+                                    <img src="${imageUrl}" style="max-width:200px; border-radius:4px; border:1px solid #ddd;" onerror="this.outerHTML='<p style=\'color:red; font-size:0.8rem;\'>圖片載入失敗</p>'">
+                                </div>`;
             }
 
             if (videoUrl) {
