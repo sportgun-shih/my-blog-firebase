@@ -307,6 +307,35 @@ header {
     border: 0;
 }
 
+/* Featured Video Grid (Option 1) */
+.featured-video-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 4rem;
+    align-items: center;
+}
+
+@media (max-width: 992px) {
+    .featured-video-grid {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+    
+    .video-info {
+        text-align: center;
+        order: 2;
+    }
+    
+    #featured-video-title {
+        font-size: 1.8rem !important;
+    }
+}
+
+.video-info .category-tag {
+    background: var(--secondary-color);
+    margin-bottom: 1rem;
+}
+
 .media-container img {
     max-width: 100%;
     height: auto;

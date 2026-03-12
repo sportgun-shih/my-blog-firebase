@@ -48,12 +48,17 @@
         </section>
 
         <section id="multimedia-section" class="multimedia-section reveal" style="display: none;">
-            <div class="container" style="margin: 0 auto; padding: 0 2rem;">
-                <div class="section-header">
-                    <h3 class="section-title">精選影音</h3>
-                </div>
-                <div id="latest-video-container" class="media-container video-wrapper">
-                    <iframe src="" title="YouTube video player" frameborder="0" allowfullscreen></iframe>
+            <div class="container" style="max-width: 1200px;">
+                <div class="featured-video-grid">
+                    <div class="video-info">
+                        <span class="category-tag" id="featured-video-category">精選影音</span>
+                        <h2 id="featured-video-title" style="font-size: 2.5rem; margin: 1rem 0; color: var(--primary-color);"></h2>
+                        <p id="featured-video-excerpt" style="color: #4a5568; margin-bottom: 2rem;"></p>
+                        <a id="featured-video-link" href="#" class="admin-link" style="display: inline-block; text-decoration: none;">閱讀完整文章 →</a>
+                    </div>
+                    <div id="latest-video-container" class="media-container video-wrapper" style="margin: 0;">
+                        <iframe src="" title="YouTube video player" frameborder="0" allowfullscreen></iframe>
+                    </div>
                 </div>
             </div>
         </section>
@@ -122,6 +127,16 @@
                         const videoId = getYouTubeID(post.videoUrl);
                         if (videoId && videoFrame) {
                             videoFrame.src = `https://www.youtube.com/embed/${videoId}`;
+                            
+                            // 填入影片資訊
+                            document.getElementById('featured-video-title').textContent = post.title;
+                            document.getElementById('featured-video-category').textContent = post.category || '精選影音';
+                            document.getElementById('featured-video-link').href = `post.html?id=${doc.id}`;
+                            
+                            // 取得內容摘要 (前 60 字)
+                            const excerpt = post.content ? post.content.replace(/<[^>]*>/g, '').substring(0, 100) + '...' : '';
+                            document.getElementById('featured-video-excerpt').textContent = excerpt;
+
                             multimediaSection.style.display = 'block';
                             foundVideo = true;
                         }
