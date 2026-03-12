@@ -158,6 +158,12 @@
 
                 <input type="hidden" id="imageUrl">
             </div>
+            <div class="form-group" style="padding: 10px; background: #fffcf0; border: 1px dashed #d4af37; border-radius: 8px; margin-top: 10px;">
+                <label style="display: flex; align-items: center; cursor: pointer; margin-bottom: 0;">
+                    <input type="checkbox" id="isFeatured" style="width: auto; margin-right: 10px;">
+                    <span style="font-size: 0.95rem; font-weight: bold; color: #856404;">⭐ 設定為首頁精選影片 (自動顯示於首頁橫版)</span>
+                </label>
+            </div>
             <div class="form-group">
                 <label for="videoUrl">YouTube 影片網址 (Optional)</label>
                 <input type="url" id="videoUrl" placeholder="YouTube 網址">
@@ -303,6 +309,7 @@
                 const date = document.getElementById('date').value;
                 const videoUrl = document.getElementById('videoUrl').value;
                 const content = document.getElementById('content').value;
+                const isFeatured = document.getElementById('isFeatured').checked;
                 const imageFile = document.getElementById('imageFile').files[0];
                 const selectedMode = document.querySelector('input[name="img-mode"]:checked').value;
                 let imageUrl = document.getElementById('imageUrl').value;
@@ -355,7 +362,7 @@
                     if (editingPostId) {
                         // 更新現有文章 (Update)
                         await db.collection("posts").doc(editingPostId).update({
-                            title, category, date, imageUrl, videoUrl, content,
+                            title, category, date, imageUrl, videoUrl, content, isFeatured,
                             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                         });
                         editingPostId = null;
@@ -363,7 +370,7 @@
                     } else {
                         // 建立新文章 (Add)
                         await db.collection("posts").add({
-                            title, category, date, imageUrl, videoUrl, content,
+                            title, category, date, imageUrl, videoUrl, content, isFeatured,
                             createdAt: firebase.firestore.FieldValue.serverTimestamp()
                         });
                     }
@@ -435,6 +442,7 @@
                     document.getElementById('imageUrlInput').value = post.imageUrl || '';
                     document.getElementById('videoUrl').value = post.videoUrl || '';
                     document.getElementById('content').value = post.content || '';
+                    document.getElementById('isFeatured').checked = post.isFeatured || false;
 
                     document.getElementById('submit-btn').textContent = '儲存更新內容';
                     updatePreview();
