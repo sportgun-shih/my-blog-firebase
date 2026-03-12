@@ -270,3 +270,128 @@ footer {
 
     /* Simplified for mobile demo */
 }
+
+/* Auth Styles */
+.auth-item {
+    display: none;
+}
+
+body.logged-in .auth-item.logged-in-only {
+    display: block;
+}
+
+body:not(.logged-in) .auth-item.logged-out-only {
+    display: block;
+}
+
+.auth-btn {
+    padding: 0.5rem 1.2rem;
+    border-radius: 20px;
+    background: var(--primary-color);
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+    font-size: 0.9rem;
+    margin-left: 1rem;
+}
+
+.auth-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.auth-btn.logout-btn {
+    background: #555;
+}
+
+/* Modal Glassmorphism */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(8px);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.modal-overlay.active {
+    display: flex;
+    opacity: 1;
+}
+
+.login-modal {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(10px);
+    padding: 2.5rem;
+    border-radius: 20px;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    transform: translateY(20px);
+    transition: transform 0.3s ease;
+    position: relative;
+}
+
+.modal-overlay.active .login-modal {
+    transform: translateY(0);
+}
+
+.login-modal h2 {
+    margin-bottom: 2rem;
+    color: var(--primary-color);
+    text-align: center;
+    font-family: 'Noto Serif TC', serif;
+}
+
+.login-form .form-group {
+    margin-bottom: 1.5rem;
+}
+
+.login-form label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.login-form input {
+    width: 100%;
+    padding: 0.8rem;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.login-form button {
+    width: 100%;
+    margin-top: 1rem;
+    padding: 1rem;
+    border-radius: 10px;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.close-modal {
+    position: absolute;
+    top: 1rem;
+    right: 1.2rem;
+    cursor: pointer;
+    font-size: 1.8rem;
+    color: #888;
+    line-height: 1;
+}
+
+.close-modal:hover {
+    color: #333;
+}

@@ -33,7 +33,13 @@
                     <li class="dropdown">
                         <a href="#">核心課程成果</a>
                     </li>
-                    <li><a href="admin.html" class="admin-link">進入後台</a></li>
+                    <li><a href="admin.html" class="admin-link auth-item logged-in-only">進入後台</a></li>
+                    <li class="auth-item logged-out-only">
+                        <button class="auth-btn" id="open-login-btn">登入</button>
+                    </li>
+                    <li class="auth-item logged-in-only">
+                        <button class="auth-btn logout-btn" id="logout-btn">登出</button>
+                    </li>
                 </ul>
             </nav>
             <div class="search-icon">🔍</div>
@@ -76,7 +82,34 @@
         <p>&copy; 2026 數位人文鍊金術 - 中原大學</p>
     </footer>
 
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+    <!-- Firebase Config -->
+    <script src="firebase-config.js"></script>
+
     <script src="app.js"></script>
+
+    <!-- Login Modal -->
+    <div class="modal-overlay" id="login-modal-overlay">
+        <div class="login-modal">
+            <span class="close-modal" id="close-login-btn">&times;</span>
+            <h2>管理員登入</h2>
+            <form class="login-form" id="login-form">
+                <div class="form-group">
+                    <label for="login-email">電子郵件</label>
+                    <input type="email" id="login-email" required placeholder="example@mail.com">
+                </div>
+                <div class="form-group">
+                    <label for="login-password">密碼</label>
+                    <input type="password" id="login-password" required placeholder="請輸入密碼">
+                </div>
+                <button type="submit">登入</button>
+            </form>
+        </div>
+    </div>
 </body>
 
 </html>
