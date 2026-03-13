@@ -206,6 +206,8 @@
         }
 
         // 問答組件渲染與邏輯
+        let isMuted = false;
+
         function renderQA(questions) {
             const container = document.getElementById('interactive-qa-container');
             let currentQuestionIndex = 0;
@@ -226,13 +228,19 @@
             `;
 
             window.startChallenge = () => {
+                const bgm = document.getElementById('audio-bgm');
+                if(!isMuted) {
+                  bgm.volume = 0.4;
+                  bgm.play().catch(e => console.log("Audio blocked", e));
+                }
                 const gameContent = document.getElementById('qa-game-content');
                 gameContent.innerHTML = `
                     <div class="qa-header">
                         <h2><span>🧠</span> 導覽挑戰進行中...</h2>
-                        <div class="progress-container">
-                            <div class="progress-bar-fill" id="progress-bar-fill"></div>
-                        </div>
+                        <button id="mute-toggle" class="mute-btn" title="切換靜音">${isMuted ? '🔇' : '🔊'}</button>
+                    </div>
+                    <div class="progress-container" style="margin-top: 0;">
+                        <div class="progress-bar-fill" id="progress-bar-fill"></div>
                     </div>
                     <div id="qa-cards">
                         ${questions.map((q, index) => `
@@ -260,6 +268,21 @@
                         <button class="next-btn" id="next-qa-btn" onclick="showNextQuestion()">下一題</button>
                     </div>
                 `;
+
+                // 綁定靜音按鈕
+                const muteBtn = document.getElementById('mute-toggle');
+                muteBtn.onclick = () => {
+                    isMuted = !isMuted;
+                    muteBtn.textContent = isMuted ? '🔇' : '🔊';
+                    const bgm = document.getElementById('audio-bgm');
+                    if (isMuted) bgm.pause();
+                    else bgm.play().catch(()=>{});
+                    
+                    document.getElementById('audio-correct').muted = isMuted;
+                    document.getElementById('audio-wrong').muted = isMuted;
+                    document.getElementById('audio-victory').muted = isMuted;
+                };
+
                 updateProgressBar();
             };
 
@@ -282,7 +305,12 @@
                 const isCorrect = optIdx === correctIdx;
                 const feedbackText = isCorrect ? feedbackCorrect : (feedbackWrong || feedbackCorrect);
                 
-                if (isCorrect) userScore++;
+                if (isCorrect) {
+                  userScore++;
+                  if(!isMuted) document.getElementById('audio-correct').play().catch(()=>{});
+                } else {
+                  if(!isMuted) document.getElementById('audio-wrong').play().catch(()=>{});
+                }
                 
                 selectedBtn.classList.add(isCorrect ? 'correct' : 'wrong');
                 
@@ -329,6 +357,10 @@
                 const fill = document.getElementById('progress-bar-fill');
                 fill.style.width = '100%';
 
+                // 停止 BGM 並播放勝利音效
+                document.getElementById('audio-bgm').pause();
+                if(!isMuted) document.getElementById('audio-victory').play().catch(()=>{});
+
                 const percent = Math.round((userScore / questions.length) * 100);
                 let rank = { title: "漫遊旅人", badge: "🚶", color: "#718096" };
 
@@ -365,6 +397,11 @@
             }
         }
     </script>
+    <!-- Audio Assets -->
+    <audio id="audio-bgm" loop src="https://www.chosic.com/wp-content/uploads/2021/05/And-So-It-Begins-Inspired-By-Crush-By-Kevin-Macleod.mp3"></audio>
+    <audio id="audio-correct" src="https://www.soundjay.com/buttons/sounds/button-3.mp3"></audio>
+    <audio id="audio-wrong" src="https://www.soundjay.com/buttons/sounds/button-10.mp3"></audio>
+    <audio id="audio-victory" src="https://www.soundjay.com/human/sounds/applause-01.mp3"></audio>
 </body>
 
 </html>

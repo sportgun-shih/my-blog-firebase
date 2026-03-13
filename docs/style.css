@@ -652,4 +652,40 @@ footer {
 
 @keyframes fall {
     to { transform: translateY(100vh) rotate(360deg); opacity: 0; }
-}
+}
+
+/* Audio Controls */
+.qa-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.qa-header h2 {
+    margin-bottom: 0 !important;
+    font-size: 1.5rem;
+}
+
+.mute-btn {
+    background: white;
+    border: 1px solid #e2e8f0;
+    font-size: 1.5rem;
+    cursor: pointer;
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.mute-btn:hover {
+    transform: scale(1.1);
+    border-color: var(--secondary-color);
+}
+
