@@ -398,10 +398,11 @@
         }
     </script>
     <!-- Audio Assets -->
-    <audio id="audio-bgm" loop src="https://www.chosic.com/wp-content/uploads/2021/05/And-So-It-Begins-Inspired-By-Crush-By-Kevin-Macleod.mp3"></audio>
-    <audio id="audio-correct" src="https://www.soundjay.com/buttons/sounds/button-3.mp3"></audio>
-    <audio id="audio-wrong" src="https://www.soundjay.com/buttons/sounds/button-10.mp3"></audio>
-    <audio id="audio-victory" src="https://www.soundjay.com/human/sounds/applause-01.mp3"></audio>
+    <!-- Audio Assets -->
+    <audio id="audio-bgm" loop preload="auto" src="https://cdn.pixabay.com/audio/2022/01/18/audio_d0a13f69d2.mp3" onerror="console.error('BGM Load Error')"></audio>
+    <audio id="audio-correct" preload="auto" src="https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3" onerror="console.error('Correct SFX Load Error')"></audio>
+    <audio id="audio-wrong" preload="auto" src="https://assets.mixkit.co/active_storage/sfx/2003/2003-preview.mp3" onerror="console.error('Wrong SFX Load Error')"></audio>
+    <audio id="audio-victory" preload="auto" src="https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3" onerror="console.error('Victory SFX Load Error')"></audio>
 </body>
 
 </html>
