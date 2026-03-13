@@ -13,12 +13,12 @@ function loadPosts() {
     const defaultPosts = [
         {
             id: 1708953600000,
-            title: '【114-1】課程微影片 — 生態工程與藝術的對話',
+            title: '【114-1】課程微影片 — 數位人文鍊金術',
             date: '2026-02-26',
             category: '課程成果',
             imageUrl: '1.JPG',
             videoUrl: 'https://www.youtube.com/watch?v=pmcw1tW4Gv0',
-            content: '這是我們課程的成果展示影片，探討生態工程與藝術的結合。'
+            content: '這是我們課程的成果展示影片，探討數位人文鍊金術的結合成果。'
         },
         { id: 1, title: '【114-1】掌握KOL與熱門話題的秘密！大數據分析講座', date: '2026-02-20', category: '活動消息', imageUrl: 'https://images.unsplash.com/photo-1542435503-956c469947f6' }
     ];
