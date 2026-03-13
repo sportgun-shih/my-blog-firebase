@@ -12,6 +12,9 @@ const firebaseConfig = {
     measurementId: "G-QKCYGQBKNB"
 };
 
+// [SECURITY] reCAPTCHA Site Key (Please replace 'RECAPTCHA_SITE_KEY' with your actual key from Google Admin Console)
+const RECAPTCHA_SITE_KEY = 'RECAPTCHA_SITE_KEY';
+
 // 初始化 Firebase
 firebase.initializeApp(firebaseConfig);
 
@@ -23,3 +26,14 @@ const auth = firebase.auth();
 
 // 取得雲端儲存實例 (Storage)
 const storage = firebase.storage();
+
+// [SECURITY] 初始化 Firebase App Check
+// 注意：這需要引入 firebase-app-check.js SDK
+if (typeof firebase.appCheck !== 'undefined' && RECAPTCHA_SITE_KEY !== 'RECAPTCHA_SITE_KEY') {
+    const appCheck = firebase.appCheck();
+    appCheck.activate(
+        new firebase.appCheck.ReCaptchaV3Provider(RECAPTCHA_SITE_KEY),
+        true // 是否自動刷新 token
+    );
+    console.log('Firebase App Check activated.');
+}

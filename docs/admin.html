@@ -169,6 +169,22 @@
                 <input type="url" id="videoUrl" placeholder="YouTube 網址">
             </div>
 
+            <div class="form-group" style="padding: 1rem; background: #f0f9ff; border-radius: 8px; border: 1px solid #bae6fd;">
+                <label for="panoeeUrl" style="color: #0369a1;">Panoee 虛擬導覽網址 (Optional)</label>
+                <input type="url" id="panoeeUrl" placeholder="例如：https://tour.panoee.net/...">
+                <p style="font-size: 0.75rem; color: #0ea5e9; margin-top: 5px;">貼上 Panoee 發佈後的網址，系統會自動轉換為嵌入框架。</p>
+            </div>
+
+            <div class="form-group" style="padding: 1.5rem; background: #fffbeb; border-radius: 12px; border: 1px solid #fef3c7; margin-top: 1.5rem;">
+                <h3 style="margin-bottom: 1rem; color: #92400e; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+                    <span>🧠 互動教學機制 (問答)</span>
+                    <button type="button" id="add-qa-btn" style="background: #d97706; padding: 4px 12px; font-size: 0.8rem;">+ 新增問題</button>
+                </h3>
+                <div id="qa-editor-container" style="display: grid; gap: 1rem;">
+                    <!-- 問答編輯器會動態產生在這裡 -->
+                </div>
+            </div>
+
             <div id="media-preview" style="margin-bottom: 2rem; display: none; padding: 1rem; background: #fff; border: 2px dashed #edf2f7; border-radius: 12px;">
                 <p style="font-size: 0.8rem; color: #718096; margin-bottom: 0.5rem;">預覽：</p>
                 <div id="preview-container"></div>
@@ -194,9 +210,19 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app-check.js"></script>
 
     <!-- 我們的設定檔 -->
     <script src="firebase-config.js"></script>
+
+    <!-- Google reCAPTCHA v3 -->
+    <script src="https://www.google.com/recaptcha/api.js?render=RECAPTCHA_SITE_KEY" id="recaptcha-script"></script>
+    <script>
+        // 動態更新 reCAPTCHA key (如果 firebase-config.js 中有更動)
+        if (typeof RECAPTCHA_SITE_KEY !== 'undefined' && RECAPTCHA_SITE_KEY !== 'RECAPTCHA_SITE_KEY') {
+            document.getElementById('recaptcha-script').src = `https://www.google.com/recaptcha/api.js?render=${RECAPTCHA_SITE_KEY}`;
+        }
+    </script>
 
     <!-- 登入遮罩層 -->
     <div id="login-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 10000; display: flex; align-items: center; justify-content: center; flex-direction: column;">
@@ -242,12 +268,34 @@
                 const email = document.getElementById('login-email').value;
                 const password = document.getElementById('login-password').value;
                 const errorMsg = document.getElementById('login-error');
+                const loginBtn = document.getElementById('login-btn');
                 
+                if (!email || !password) {
+                    errorMsg.textContent = '請輸入帳號與密碼';
+                    errorMsg.style.display = 'block';
+                    return;
+                }
+
+                loginBtn.disabled = true;
+                loginBtn.textContent = '進行安全驗證中...';
+
                 try {
+                    // [SECURITY] 執行 reCAPTCHA 驗證
+                    if (typeof grecaptcha !== 'undefined' && RECAPTCHA_SITE_KEY !== 'RECAPTCHA_SITE_KEY') {
+                        const token = await grecaptcha.execute(RECAPTCHA_SITE_KEY, {action: 'login'});
+                        // 注意：這裡取得的是 client-side token，
+                        // 在正式環境中，建議將此 token 傳送到後端 (Cloud Functions) 進行驗證。
+                        // 這裡先行整合 UI 展示。
+                        console.log('reCAPTCHA Token acquired:', token);
+                    }
+
                     await auth.signInWithEmailAndPassword(email, password);
                 } catch (err) {
                     errorMsg.textContent = '登入失敗：' + err.message;
                     errorMsg.style.display = 'block';
+                } finally {
+                    loginBtn.disabled = false;
+                    loginBtn.textContent = '登入';
                 }
             });
             
@@ -308,11 +356,32 @@
                 const category = document.getElementById('category').value;
                 const date = document.getElementById('date').value;
                 const videoUrl = document.getElementById('videoUrl').value;
+                const panoeeUrl = document.getElementById('panoeeUrl').value;
                 const content = document.getElementById('content').value;
                 const isFeatured = document.getElementById('isFeatured').checked;
                 const imageFile = document.getElementById('imageFile').files[0];
                 const selectedMode = document.querySelector('input[name="img-mode"]:checked').value;
                 let imageUrl = document.getElementById('imageUrl').value;
+
+                // 收集 Q&A 資料
+                const questions = [];
+                const qaBlocks = document.querySelectorAll('.qa-block');
+                qaBlocks.forEach(block => {
+                    const questionText = block.querySelector('.qa-question').value;
+                    if (!questionText.trim()) return;
+
+                    const optionInputs = block.querySelectorAll('.qa-option');
+                    const options = Array.from(optionInputs).map(input => input.value).filter(v => v.trim() !== '');
+                    const correctIndex = parseInt(block.querySelector('.qa-correct').value);
+                    const feedback = block.querySelector('.qa-feedback').value;
+
+                    questions.push({
+                        text: questionText,
+                        options: options,
+                        correctIndex: correctIndex,
+                        feedback: feedback
+                    });
+                });
 
                 try {
                     // 如果選擇「上傳模式」且有選擇新檔案
@@ -362,7 +431,7 @@
                     if (editingPostId) {
                         // 更新現有文章 (Update)
                         await db.collection("posts").doc(editingPostId).update({
-                            title, category, date, imageUrl, videoUrl, content, isFeatured,
+                            title, category, date, imageUrl, videoUrl, panoeeUrl, content, isFeatured, questions,
                             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                         });
                         editingPostId = null;
@@ -370,12 +439,13 @@
                     } else {
                         // 建立新文章 (Add)
                         await db.collection("posts").add({
-                            title, category, date, imageUrl, videoUrl, content, isFeatured,
+                            title, category, date, imageUrl, videoUrl, panoeeUrl, content, isFeatured, questions,
                             createdAt: firebase.firestore.FieldValue.serverTimestamp()
                         });
                     }
 
                     e.target.reset();
+                    document.getElementById('qa-editor-container').innerHTML = ''; // 清空 Q&A 編輯器
                     document.getElementById('upload-progress-container').style.display = 'none';
                     document.getElementById('imageUrl').value = '';
                     updatePreview();
@@ -441,8 +511,16 @@
                     document.getElementById('imageUrl').value = post.imageUrl || '';
                     document.getElementById('imageUrlInput').value = post.imageUrl || '';
                     document.getElementById('videoUrl').value = post.videoUrl || '';
+                    document.getElementById('panoeeUrl').value = post.panoeeUrl || '';
                     document.getElementById('content').value = post.content || '';
                     document.getElementById('isFeatured').checked = post.isFeatured || false;
+
+                    // 載入 Q&A
+                    const qaContainer = document.getElementById('qa-editor-container');
+                    qaContainer.innerHTML = '';
+                    if (post.questions && Array.isArray(post.questions)) {
+                        post.questions.forEach(q => addQABlock(q));
+                    }
 
                     document.getElementById('submit-btn').textContent = '儲存更新內容';
                     updatePreview();

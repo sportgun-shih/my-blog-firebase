@@ -3,230 +3,127 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>數位人文專案：雲端與託管全流程指南</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <title>數位人文專案設定指南</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: #2563eb;
-            --primary-light: #eff6ff;
             --secondary: #64748b;
-            --accent: #f59e0b;
             --bg: #f8fafc;
             --card: #ffffff;
             --text: #1e293b;
-            --code-bg: #1e293b;
-            --code-text: #f8fafc;
         }
-        * { box-sizing: border-box; }
         body {
             font-family: 'Noto Sans TC', sans-serif;
             background-color: var(--bg);
             color: var(--text);
-            line-height: 1.7;
+            line-height: 1.8;
             margin: 0;
-            padding: 0;
-        }
-        .header {
-            background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
-            color: white;
-            padding: 4rem 2rem;
-            text-align: center;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-        }
-        .header h1 {
-            font-family: 'Outfit', sans-serif;
-            font-size: 2.5rem;
-            margin: 0;
-            letter-spacing: -0.5px;
-        }
-        .header p {
-            font-size: 1.1rem;
-            opacity: 0.9;
-            max-width: 600px;
-            margin: 1rem auto 0;
+            padding: 2rem;
         }
         .container {
-            max-width: 900px;
-            margin: -3rem auto 4rem;
-            padding: 0 1rem;
-        }
-        .card {
+            max-width: 800px;
+            margin: 0 auto;
             background: var(--card);
             padding: 3rem;
-            border-radius: 16px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.05);
-            margin-bottom: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        }
+        h1 {
+            color: var(--primary);
+            border-bottom: 3px solid var(--primary);
+            padding-bottom: 0.5rem;
+            text-align: center;
         }
         h2 {
-            font-family: 'Outfit', sans-serif;
             color: var(--primary);
-            font-size: 1.8rem;
-            margin-top: 0;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        h2::before {
-            content: '';
-            display: inline-block;
-            width: 4px;
-            height: 1.8rem;
-            background: var(--accent);
-            border-radius: 2px;
+            margin-top: 2.5rem;
+            background: #eff6ff;
+            padding: 0.5rem 1rem;
+            border-left: 5px solid var(--primary);
         }
         h3 {
             color: var(--secondary);
-            font-weight: 500;
-            margin-top: 2rem;
-            border-bottom: 1px solid #f1f5f9;
-            padding-bottom: 0.5rem;
-        }
-        .step-list {
-            padding-left: 1.2rem;
-        }
-        .step-list li {
-            margin-bottom: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 0.3rem;
         }
         code {
             background: #f1f5f9;
-            padding: 0.2rem 0.5rem;
+            padding: 0.2rem 0.4rem;
             border-radius: 4px;
-            font-family: 'Courier New', Courier, monospace;
-            color: #ef4444;
-            font-weight: 600;
+            font-family: monospace;
+            color: #e11d48;
         }
-        .path-box {
-            background: var(--code-bg);
-            color: var(--code-text);
+        .step {
+            margin-bottom: 1.5rem;
+        }
+        .tip {
+            background: #fff7ed;
+            border: 1px solid #fdba74;
             padding: 1rem;
             border-radius: 8px;
-            font-family: monospace;
-            margin: 1rem 0;
-            overflow-x: auto;
-            border-left: 4px solid var(--accent);
+            margin-top: 2rem;
         }
-        .highlight {
-            color: var(--primary);
-            font-weight: bold;
-        }
-        .alert {
-            background: #fff7ed;
-            border-left: 5px solid var(--accent);
-            padding: 1.5rem;
-            border-radius: 8px;
-            margin: 2rem 0;
-        }
-        .alert strong { color: #9a3412; }
-        
-        .badge {
-            display: inline-block;
-            padding: 2px 10px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: bold;
-            background: var(--primary-light);
-            color: var(--primary);
-            margin-left: 8px;
-        }
-        
-        .footer {
-            text-align: center;
-            padding: 2rem;
-            color: var(--secondary);
-            font-size: 0.9rem;
-        }
-
-        /* 響應式優化 */
-        @media (max-width: 600px) {
-            .header h1 { font-size: 1.8rem; }
-            .card { padding: 1.5rem; }
-        }
+        .tip strong { color: #9a3412; }
+        a { color: var(--primary); text-decoration: none; }
+        a:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
-    <header class="header">
-        <h1>數位人文專案教學指南</h1>
-        <p>從本地開發到雲端發佈的完整實作流程紀錄</p>
-    </header>
-
     <div class="container">
-        <!-- 第 0 階段：專案結構規劃 -->
-        <div class="card">
-            <h2>📦 階段 0：專案目錄規範</h2>
-            <p>為了讓網址專業且檔案整齊，我們採用業界常用的 <code>docs</code> 目錄法：</p>
+        <h1>🎓 數位人文專案：雲端與託管全紀錄</h1>
+        <p style="text-align: center; color: #64748b;">這份指南將帶領你完成網頁作品的「GitHub 掛載」與「Firebase 雲端連接」。</p>
+
+        <h2>📅 第一階段：GitHub 網站託管</h2>
+        <div class="step">
+            <h3>1. 安裝工具</h3>
             <ul>
-                <li><code>/docs/</code>：存放正式上線的網頁程式（index, css, js 等）。</li>
-                <li><code>/第一版試做/</code>：存放開發初期的備份。</li>
-                <li>根目錄：存放 Git 設定檔與說明文件。</li>
+                <li>下載並安裝 <a href="https://desktop.github.com/" target="_blank">GitHub Desktop</a>。</li>
+                <li>登入你的 GitHub 帳號。</li>
             </ul>
-            <div class="alert">
-                <strong>💡 優點：</strong> 這種佈局能讓 GitHub 網址最乾淨，且檔案管理層次分明。
-            </div>
         </div>
-
-        <!-- 第 1 階段：GitHub 託管 -->
-        <div class="card">
-            <h2>🌐 階段 1：GitHub 網站託管 (Hosting)</h2>
-            <h3>Step 1. 建立倉庫與存檔</h3>
-            <ol class="step-list">
-                <li>打開 <strong>GitHub Desktop</strong>，選擇 <code>File</code> > <code>Add Local Repository</code>。</li>
-                <li>指向你的專案資料夾。若提示非倉庫，點擊連結建立專案。</li>
-                <li>在左下角 <code>Summary</code> 填入 <span class="highlight">初始化版本</span>，點擊 <strong>Commit to main</strong>。</li>
-                <li>點擊上方 <strong>Publish Repository</strong>。</li>
-                <li><span style="color:red">重要：</span> 務必取消勾選 <code>Keep this code private</code>。</li>
+        <div class="step">
+            <h3>2. 連結資料夾</h3>
+            <ol>
+                <li>打開 GitHub Desktop，點選 <code>File</code> > <code>Add local repository...</code></li>
+                <li>選擇專案資料夾後點擊 <code>Add repository</code>。</li>
+                <li>若提示非 Git 倉庫，點擊 <code>Create a repository</code>。</li>
             </ol>
-
-            <h3>Step 2. 開啟 GitHub Pages 免費網址</h3>
-            <ol class="step-list">
-                <li>到 GitHub 網頁端的專案頁面，點選 <strong>Settings</strong>。</li>
-                <li>點擊左側 <strong>Pages</strong>。</li>
-                <li>在 Branch 區塊選擇 <code>main</code>，右邊的資料夾路徑選成 <span class="highlight">/docs</span> <span class="badge">魔法設定</span>。</li>
-                <li>點擊 <strong>Save</strong>。大約 1 分鐘後你的網址就生效了！</li>
-            </ol>
-            <div class="path-box">您的網址：https://[Username].github.io/[Project-Name]/</div>
         </div>
-
-        <!-- 第 2 階段：Firebase 雲端 -->
-        <div class="card">
-            <h2>🔥 階段 2：Firebase 雲端資料庫</h2>
-            <h3>Step 1. 建立資料中心</h3>
-            <ol class="step-list">
-                <li>前往 <a href="https://console.firebase.google.com/" target="_blank">Firebase Console</a> 建立新專案。</li>
-                <li>在 <strong>Firestore Database</strong> 點擊建立，選擇 <span class="highlight">測試模式 (Test mode)</span> 啟動。</li>
-                <li>位置選取 <code>asia-east1</code> (台北)。</li>
-            </ol>
-
-            <h3>Step 2. 獲取 API 金鑰</h3>
-            <ol class="step-list">
-                <li>進入 <strong>專案設定</strong>，在 Web 應用程式 (<code></></code>) 註冊。</li>
-                <li>複製 <code>firebaseConfig</code> 內的物件內容。</li>
-                <li>打開 <code>docs/firebase-config.js</code>，貼入剛剛複製的金鑰資訊。</li>
+        <div class="step">
+            <h3>3. 上傳與發布</h3>
+            <ol>
+                <li>在 <code>Summary</code> 填寫 "Initial Commit"，點擊 <code>Commit to main</code>。</li>
+                <li>點擊上方 <code>Publish repository</code>。</li>
+                <li><strong>取消勾選</strong> <code>Keep this code private</code>。</li>
             </ol>
         </div>
 
-        <!-- 日常開發流 -->
-        <div class="card" style="border-top: 5px solid var(--accent);">
-            <h2>🔄 日常開發：三步驟同步法</h2>
-            <p>每當你修改了程式碼，想讓雲端網站更新：</p>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-                <div style="background: #fdf2f2; padding: 1rem; border-radius: 8px; text-align: center;">
-                    <h4 style="margin: 0;">1. 編輯</h4>
-                    <p style="font-size: 0.9rem;">在 docs 資料夾<br>修改 HTML/CSS</p>
-                </div>
-                <div style="background: #f0fdf4; padding: 1rem; border-radius: 8px; text-align: center;">
-                    <h4 style="margin: 0;">2. Commit</h4>
-                    <p style="font-size: 0.9rem;">在軟體左下角<br>寫摘要點存檔</p>
-                </div>
-                <div style="background: #eff6ff; padding: 1rem; border-radius: 8px; text-align: center;">
-                    <h4 style="margin: 0;">3. Push</h4>
-                    <p style="font-size: 0.9rem;">點擊上方藍色<br>按鈕推送到雲端</p>
-                </div>
-            </div>
+        <h2>☁️ 第二階段：Firebase 雲端資料庫</h2>
+        <div class="step">
+            <h3>1. 建立專案</h3>
+            <ol>
+                <li>前往 <a href="https://console.firebase.google.com/" target="_blank">Firebase Console</a>。</li>
+                <li>點擊「新增專案」並建立 Firestore 資料庫。</li>
+                <li>選擇「測試模式啟動 (Test mode)」。</li>
+            </ol>
+        </div>
+        <div class="step">
+            <h3>2. 取得 API 金鑰</h3>
+            <ol>
+                <li>在專案設定中點擊 <code>&lt;/&gt;</code> 註冊 Web 應用程式。</li>
+                <li>複製 <code>const firebaseConfig = { ... };</code> 的內容。</li>
+            </ol>
+        </div>
+        <div class="step">
+            <h3>3. 設定程式碼</h3>
+            <p>打開 <code>firebase-config.js</code>，將內容貼入對應位置。</p>
+        </div>
+
+        <div class="tip">
+            <strong>💡 為什麼要這樣做？</strong><br>
+            GitHub 是你的免費伺服器，Firebase 是你的雲端資料庫。兩者結合，你的作品就能在各處被即時存取！
         </div>
     </div>
-
-    <footer class="footer">
-        &copy; 2026 數位人文鍊金術 - 課程實務指南
-    </footer>
 </body>
 </html>

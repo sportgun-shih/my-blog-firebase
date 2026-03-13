@@ -105,6 +105,7 @@
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app-check.js"></script>
 
     <!-- 我們的設定檔 -->
     <script src="firebase-config.js"></script>
@@ -156,6 +157,14 @@
                         }
                     }
 
+                    // Panoee Handling
+                    if (post.panoeeUrl && post.panoeeUrl.trim() !== '') {
+                        mediaHtml += `
+                            <div class="panoee-container">
+                                <iframe src="${post.panoeeUrl}" allowfullscreen></iframe>
+                            </div>`;
+                    }
+
                     postDisplay.innerHTML = `
                         <div class="post-header">
                             <div class="post-meta">
@@ -166,7 +175,13 @@
                         </div>
                         ${mediaHtml}
                         <div class="post-content">${post.content || '暫無內文。'}</div>
+                        <div id="interactive-qa-container"></div>
                     `;
+
+                    // 初始化問答組件
+                    if (post.questions && post.questions.length > 0) {
+                        renderQA(post.questions);
+                    }
                 } else {
                     postDisplay.innerHTML = '<h1>找不到文章，可能已被刪除。</h1>';
                 }
@@ -188,6 +203,94 @@
             const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/|youtube\.com\/shorts\/|youtube\.com\/live\/)([^"&?\/\s]{11})/i;
             const match = url.match(regex);
             return match ? match[1] : null;
+        }
+
+        // 問答組件渲染與邏輯
+        function renderQA(questions) {
+            const container = document.getElementById('interactive-qa-container');
+            let currentQuestionIndex = 0;
+
+            const qaHtml = `
+                <section class="interactive-qa">
+                    <div class="qa-header">
+                        <h2><span>🧠</span> 互動教學：測測你的導覽知識</h2>
+                    </div>
+                    <div id="qa-cards">
+                        ${questions.map((q, index) => `
+                            <div class="question-card ${index === 0 ? 'active' : ''}" id="qa-card-${index}">
+                                <p class="question-text">${q.text}</p>
+                                <div class="options-grid">
+                                    ${q.options.map((opt, optIdx) => `
+                                        <button class="option-btn" onclick="checkAnswer(${index}, ${optIdx}, ${q.correctIndex}, '${q.feedback.replace(/'/g, "\\'")}')">
+                                            ${opt}
+                                            <span class="status-icon"></span>
+                                        </button>
+                                    `).join('')}
+                                </div>
+                                <div class="feedback-section" id="feedback-${index}"></div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="qa-footer">
+                        <div class="progress-dots">
+                            ${questions.map((_, index) => `<div class="dot ${index === 0 ? 'active' : ''}" id="dot-${index}"></div>`).join('')}
+                        </div>
+                        <button class="next-btn" id="next-qa-btn" onclick="showNextQuestion()">下一題</button>
+                    </div>
+                </section>
+            `;
+            container.innerHTML = qaHtml;
+
+            window.checkAnswer = (qIdx, optIdx, correctIdx, feedback) => {
+                const card = document.getElementById(`qa-card-${qIdx}`);
+                const options = card.querySelectorAll('.option-btn');
+                const feedbackEl = document.getElementById(`feedback-${qIdx}`);
+                const nextBtn = document.getElementById('next-qa-btn');
+                
+                // 停止其他按鈕點擊
+                options.forEach(btn => btn.style.pointerEvents = 'none');
+                
+                const selectedBtn = options[optIdx];
+                const isCorrect = optIdx === correctIdx;
+                
+                selectedBtn.classList.add(isCorrect ? 'correct' : 'wrong');
+                
+                feedbackEl.innerHTML = `
+                    <div class="feedback-content ${isCorrect ? 'feedback-success' : 'feedback-error'}">
+                        <strong>${isCorrect ? '✅ 答對了！' : '❌ 再接再厲！'}</strong>
+                        <p>${feedback}</p>
+                    </div>
+                `;
+                feedbackEl.classList.add('show');
+                
+                // 更新進度點
+                document.getElementById(`dot-${qIdx}`).classList.add('completed');
+                
+                // 顯示下一題按鈕 (如果是最後一題則顯示完成)
+                nextBtn.classList.add('ready');
+                if (qIdx === questions.length - 1) {
+                    nextBtn.textContent = '完成教學';
+                }
+            };
+
+            window.showNextQuestion = () => {
+                if (currentQuestionIndex < questions.length - 1) {
+                    // 隱藏目前題目
+                    document.getElementById(`qa-card-${currentQuestionIndex}`).classList.remove('active');
+                    document.getElementById(`dot-${currentQuestionIndex}`).classList.remove('active');
+                    
+                    currentQuestionIndex++;
+                    
+                    // 顯示下一題
+                    document.getElementById(`qa-card-${currentQuestionIndex}`).classList.add('active');
+                    document.getElementById(`dot-${currentQuestionIndex}`).classList.add('active');
+                    
+                    const nextBtn = document.getElementById('next-qa-btn');
+                    nextBtn.classList.remove('ready');
+                } else {
+                    alert('恭喜你完成了這篇互動教學！');
+                }
+            };
         }
     </script>
 </body>
