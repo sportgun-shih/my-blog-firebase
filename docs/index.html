@@ -43,7 +43,18 @@
                 <a href="#" class="view-more">瀏覽全部 →</a>
             </div>
 
-            <div class="news-list" id="posts-container">
+            <div class="news-list" id="news-container">
+                <div class="news-item loading">即將從雲端讀取內容...</div>
+            </div>
+        </section>
+
+        <section class="container reveal" style="margin-top: 4rem;">
+            <div class="section-header">
+                <h3 class="section-title">成果內容</h3>
+                <a href="#" class="view-more">瀏覽全部 →</a>
+            </div>
+
+            <div class="news-list" id="outcome-container">
                 <div class="news-item loading">即將從雲端讀取內容...</div>
             </div>
         </section>
@@ -103,7 +114,8 @@
         }
 
         function loadPostsFromCloud() {
-            const postsContainer = document.getElementById('posts-container');
+            const newsContainer = document.getElementById('news-container');
+            const outcomeContainer = document.getElementById('outcome-container');
             const multimediaSection = document.getElementById('multimedia-section');
             const videoFrame = document.querySelector('#featured-video-wrapper iframe');
             const featuredVideoWrapper = document.getElementById('featured-video-wrapper');
@@ -112,10 +124,12 @@
 
             // 監聽雲端資料庫變化 (Real-time listener)
             db.collection("posts").orderBy("date", "desc").onSnapshot((querySnapshot) => {
-                postsContainer.innerHTML = '';
+                newsContainer.innerHTML = '';
+                outcomeContainer.innerHTML = '';
 
                 if (querySnapshot.empty) {
-                    postsContainer.innerHTML = '<div class="news-item">尚無最新消息。</div>';
+                    newsContainer.innerHTML = '<div class="news-item">尚無內容。</div>';
+                    outcomeContainer.innerHTML = '<div class="news-item">尚無內容。</div>';
                     multimediaSection.style.display = 'none';
                     return;
                 }
@@ -140,7 +154,10 @@
                     });
                 }
 
-                // 第三輪：渲染新聞列表
+                // 第三輪：渲染新聞列表與成果內容
+                let newsCount = 0;
+                let outcomeCount = 0;
+
                 querySnapshot.forEach((doc) => {
                     const post = doc.data();
                     const item = document.createElement('div');
@@ -152,8 +169,18 @@
                         </div>
                         <span class="date">${post.date}</span>
                     `;
-                    postsContainer.appendChild(item);
+                    
+                    if (post.category === '活動消息') {
+                        newsContainer.appendChild(item);
+                        newsCount++;
+                    } else {
+                        outcomeContainer.appendChild(item);
+                        outcomeCount++;
+                    }
                 });
+
+                if (newsCount === 0) newsContainer.innerHTML = '<div class="news-item">尚無最新活動消息。</div>';
+                if (outcomeCount === 0) outcomeContainer.innerHTML = '<div class="news-item">尚無成果內容。</div>';
 
                 // 處理精選區塊顯示
                 if (featuredPost) {
