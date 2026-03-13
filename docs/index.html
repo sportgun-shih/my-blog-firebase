@@ -4,7 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>尋遊桃仔園 - 數位人文跨域人才培育計畫 (雲端版)</title>
+    <title>數位人文鍊金術 - 中原大學</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <link rel="stylesheet" href="style.css">
     <link
         href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&family=Noto+Sans+TC:wght@300;400;700&display=swap"
@@ -40,7 +43,7 @@
         <section class="container reveal">
             <div class="section-header">
                 <h3 class="section-title">最新消息</h3>
-                <a href="#" class="view-more">瀏覽全部 →</a>
+                <a href="javascript:void(0)" onclick="toggleShowAll('news')" id="news-view-all" class="view-more">瀏覽全部 →</a>
             </div>
 
             <div class="news-list" id="news-container">
@@ -51,7 +54,7 @@
         <section class="container reveal" style="margin-top: 4rem;">
             <div class="section-header">
                 <h3 class="section-title">成果內容</h3>
-                <a href="#" class="view-more">瀏覽全部 →</a>
+                <a href="javascript:void(0)" onclick="toggleShowAll('outcome')" id="outcome-view-all" class="view-more">瀏覽全部 →</a>
             </div>
 
             <div class="tab-container" id="outcome-tabs">
@@ -107,11 +110,24 @@
 
     <script>
         let currentSubCategory = '環境虛擬導覽';
+        let showAllNews = false;
+        let showAllOutcomes = false;
 
         document.addEventListener('DOMContentLoaded', () => {
             loadPostsFromCloud();
             initReveal();
         });
+
+        function toggleShowAll(type) {
+            if (type === 'news') {
+                showAllNews = !showAllNews;
+                document.getElementById('news-view-all').textContent = showAllNews ? '← 顯示較少' : '瀏覽全部 →';
+            } else {
+                showAllOutcomes = !showAllOutcomes;
+                document.getElementById('outcome-view-all').textContent = showAllOutcomes ? '← 顯示較少' : '瀏覽全部 →';
+            }
+            loadPostsFromCloud();
+        }
 
         function switchTab(subCat) {
             currentSubCategory = subCat;
@@ -195,15 +211,18 @@
                     `;
                     
                     if (post.category === '活動消息' || post.category === '學術研討' || post.category === '工作坊') {
-                        // 最新消息限制顯示 3 個 (包含活動、研討、工作坊)
-                        if (newsCount < 3) {
+                        // 最新消息限制顯示 3 個 (除非點擊瀏覽全部)
+                        if (showAllNews || newsCount < 3) {
                             newsContainer.appendChild(item);
                         }
                         newsCount++;
                     } else if (post.category === '課程成果') {
                         // 課程成果專屬區塊，持續根據子類別過濾
                         if (post.subCategory === currentSubCategory) {
-                             outcomeContainer.appendChild(item);
+                             // 成果預設顯示 6 個，點擊後展開全部
+                             if (showAllOutcomes || outcomeCount < 6) {
+                                 outcomeContainer.appendChild(item);
+                             }
                              outcomeCount++;
                         }
                     }
