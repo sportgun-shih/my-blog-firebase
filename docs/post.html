@@ -178,8 +178,8 @@
                         <div id="interactive-qa-container"></div>
                     `;
 
-                    // 初始化問答組件
-                    if (post.questions && post.questions.length > 0) {
+                    // 初始化問答組件 (僅限課程成果類別)
+                    if (post.category === '課程成果' && post.questions && post.questions.length > 0) {
                         renderQA(post.questions);
                     }
                 } else {
