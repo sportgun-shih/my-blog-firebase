@@ -69,7 +69,7 @@
             <div id="featured-video-container-inner" class="container" style="max-width: 1200px !important;">
                 <div class="featured-video-grid">
                     <div class="video-info">
-                        <span class="category-tag" id="featured-video-category">精選內容</span>
+                        <span class="category-tag" id="featured-video-category">精選成果內容</span>
                         <h2 id="featured-video-title" style="font-size: 2.5rem; margin: 1rem 0; color: var(--primary-color);"></h2>
                         <p id="featured-video-excerpt" style="color: #4a5568; margin-bottom: 2rem;"></p>
                         <a id="featured-video-link" href="#" class="admin-link" style="display: inline-block; text-decoration: none;">閱讀完整文章 →</a>
@@ -78,6 +78,10 @@
                         <!-- 影片容器 -->
                         <div id="featured-video-wrapper" class="video-wrapper" style="display: none; border-radius: 15px; overflow: hidden; box-shadow: var(--box-shadow);">
                             <iframe src="" title="YouTube video player" frameborder="0" allowfullscreen></iframe>
+                        </div>
+                        <!-- Panoee 容器 -->
+                        <div id="featured-panoee-wrapper" class="video-wrapper" style="display: none; border-radius: 15px; overflow: hidden; box-shadow: var(--box-shadow);">
+                            <iframe src="" title="Panoee Virtual Tour" frameborder="0" allowfullscreen></iframe>
                         </div>
                         <!-- 圖片容器 -->
                         <div id="featured-image-wrapper" style="display: none; border-radius: 15px; overflow: hidden; box-shadow: var(--box-shadow);">
@@ -138,39 +142,40 @@
             const videoFrame = document.querySelector('#featured-video-wrapper iframe');
             const featuredVideoWrapper = document.getElementById('featured-video-wrapper');
             const featuredImageWrapper = document.getElementById('featured-image-wrapper');
-            const featuredImage = document.getElementById('featured-image');
+                const featuredPanoeeWrapper = document.getElementById('featured-panoee-wrapper');
+                const panoeeFrame = document.querySelector('#featured-panoee-wrapper iframe');
 
-            // 監聽雲端資料庫變化 (Real-time listener)
-            db.collection("posts").orderBy("date", "desc").onSnapshot((querySnapshot) => {
-                newsContainer.innerHTML = '';
-                outcomeContainer.innerHTML = '';
+                // 監聽雲端資料庫變化 (Real-time listener)
+                db.collection("posts").orderBy("date", "desc").onSnapshot((querySnapshot) => {
+                    newsContainer.innerHTML = '';
+                    outcomeContainer.innerHTML = '';
 
-                if (querySnapshot.empty) {
-                    newsContainer.innerHTML = '<div class="news-item">尚無內容。</div>';
-                    outcomeContainer.innerHTML = '<div class="news-item">尚無內容。</div>';
-                    multimediaSection.style.display = 'none';
-                    return;
-                }
-
-                let featuredPost = null;
-
-                // 第一輪：尋找設定為「精選」的文章 (優先考慮有影像內容的)
-                querySnapshot.forEach((doc) => {
-                    const post = doc.data();
-                    if (!featuredPost && post.isFeatured && (post.videoUrl || post.imageUrl)) {
-                        featuredPost = { ...post, id: doc.id };
+                    if (querySnapshot.empty) {
+                        newsContainer.innerHTML = '<div class="news-item">尚無內容。</div>';
+                        outcomeContainer.innerHTML = '<div class="news-item">尚無內容。</div>';
+                        multimediaSection.style.display = 'none';
+                        return;
                     }
-                });
 
-                // 第二輪：如果沒找到手動精選，則找最新的一篇含有影音的文章作為備案
-                if (!featuredPost) {
+                    let featuredPost = null;
+
+                    // 第一輪：尋找設定為「精選」的文章 (優先考慮有影像內容的)
                     querySnapshot.forEach((doc) => {
                         const post = doc.data();
-                        if (!featuredPost && (post.videoUrl || post.imageUrl)) {
+                        if (!featuredPost && post.isFeatured && (post.videoUrl || post.imageUrl || post.panoeeUrl)) {
                             featuredPost = { ...post, id: doc.id };
                         }
                     });
-                }
+
+                    // 第二輪：如果沒找到手動精選，則找最新的一篇含有影音的文章作為備案
+                    if (!featuredPost) {
+                        querySnapshot.forEach((doc) => {
+                            const post = doc.data();
+                            if (!featuredPost && (post.videoUrl || post.imageUrl || post.panoeeUrl)) {
+                                featuredPost = { ...post, id: doc.id };
+                            }
+                        });
+                    }
 
                 // 第三輪：渲染新聞列表與成果內容
                 let newsCount = 0;
@@ -212,9 +217,14 @@
                     
                     // 重置顯示狀態
                     featuredVideoWrapper.style.display = 'none';
+                    featuredPanoeeWrapper.style.display = 'none';
                     featuredImageWrapper.style.display = 'none';
                     
-                    if (videoId) {
+                    if (featuredPost.panoeeUrl) {
+                        // 優先顯示 Panoee 虛擬導覽
+                        panoeeFrame.src = featuredPost.panoeeUrl;
+                        featuredPanoeeWrapper.style.display = 'block';
+                    } else if (videoId) {
                         // 顯示影片
                         videoFrame.src = `https://www.youtube.com/embed/${videoId}`;
                         featuredVideoWrapper.style.display = 'block';
