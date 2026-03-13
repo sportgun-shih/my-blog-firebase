@@ -370,8 +370,8 @@
                     const questionText = block.querySelector('.qa-question').value;
                     if (!questionText.trim()) return;
 
-                    const optionInputs = block.querySelectorAll('.qa-option');
-                    const options = Array.from(optionInputs).map(input => input.value).filter(v => v.trim() !== '');
+                    const optionTextarea = block.querySelector('.qa-option');
+                    const options = optionTextarea.value.split('\n').map(v => v.trim()).filter(v => v !== '');
                     const correctIndex = parseInt(block.querySelector('.qa-correct').value);
                     const feedback = block.querySelector('.qa-feedback').value;
 
