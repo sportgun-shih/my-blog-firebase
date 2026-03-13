@@ -373,13 +373,15 @@
                     const optionTextarea = block.querySelector('.qa-option');
                     const options = optionTextarea.value.split(/\r?\n/).map(v => v.trim()).filter(v => v !== '');
                     const correctIndex = parseInt(block.querySelector('.qa-correct').value);
-                    const feedback = block.querySelector('.qa-feedback').value;
+                    const feedbackCorrect = block.querySelector('.qa-feedback-correct').value;
+                    const feedbackWrong = block.querySelector('.qa-feedback-wrong').value;
 
                     questions.push({
                         text: questionText,
                         options: options,
                         correctIndex: correctIndex,
-                        feedback: feedback
+                        feedbackCorrect: feedbackCorrect,
+                        feedbackWrong: feedbackWrong
                     });
                 });
 
@@ -619,8 +621,12 @@
                         <small style="color: #718096; display: block; margin-top: 5px;">0 代表第一個選項</small>
                     </div>
                     <div class="form-group">
-                        <label>💡 答對後的回饋教學內容</label>
-                        <input type="text" class="qa-feedback" placeholder="例如：答對了！這裡是大溪老街，擁有豐富的木器文化..." value="${data ? data.feedback : ''}">
+                        <label>✅ 答對後的回饋內容</label>
+                        <input type="text" class="qa-feedback-correct" placeholder="例如：太棒了！答對囉..." value="${data ? (data.feedbackCorrect || data.feedback || '') : ''}">
+                    </div>
+                    <div class="form-group">
+                        <label>❌ 答錯後的提示內容</label>
+                        <input type="text" class="qa-feedback-wrong" placeholder="例如：可惜了，再試試看..." value="${data ? (data.feedbackWrong || '') : ''}">
                     </div>
                 </div>
             `;

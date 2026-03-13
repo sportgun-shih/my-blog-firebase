@@ -243,7 +243,7 @@
                                 <p class="question-text">${q.text}</p>
                                 <div class="options-grid">
                                     ${q.options.map((opt, optIdx) => `
-                                        <button class="option-btn" onclick="checkAnswer(${index}, ${optIdx}, ${q.correctIndex}, '${q.feedback.replace(/'/g, "\\'")}')">
+                                        <button class="option-btn" onclick="checkAnswer(${index}, ${optIdx}, ${q.correctIndex}, '${(q.feedbackCorrect || q.feedback || '').replace(/'/g, "\\'")}', '${(q.feedbackWrong || '').replace(/'/g, "\\'")}')">
                                             ${opt}
                                             <span class="status-icon"></span>
                                         </button>
@@ -269,7 +269,7 @@
                 fill.style.width = percent + '%';
             }
 
-            window.checkAnswer = (qIdx, optIdx, correctIdx, feedback) => {
+            window.checkAnswer = (qIdx, optIdx, correctIdx, feedbackCorrect, feedbackWrong) => {
                 const card = document.getElementById(`qa-card-${qIdx}`);
                 const options = card.querySelectorAll('.option-btn');
                 const feedbackEl = document.getElementById(`feedback-${qIdx}`);
@@ -280,6 +280,7 @@
                 
                 const selectedBtn = options[optIdx];
                 const isCorrect = optIdx === correctIdx;
+                const feedbackText = isCorrect ? feedbackCorrect : (feedbackWrong || feedbackCorrect);
                 
                 if (isCorrect) userScore++;
                 
@@ -288,7 +289,7 @@
                 feedbackEl.innerHTML = `
                     <div class="feedback-content ${isCorrect ? 'feedback-success' : 'feedback-error'}">
                         <strong>${isCorrect ? '✅ 答對了！' : '❌ 再接再厲！'}</strong>
-                        <p>${feedback}</p>
+                        <p>${feedbackText}</p>
                     </div>
                 `;
                 feedbackEl.classList.add('show');
