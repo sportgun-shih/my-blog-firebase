@@ -357,20 +357,26 @@
                 const fill = document.getElementById('progress-bar-fill');
                 fill.style.width = '100%';
 
-                // 停止 BGM 並播放勝利音效
-                document.getElementById('audio-bgm').pause();
-                if(!isMuted) document.getElementById('audio-victory').play().catch(()=>{});
+                // 停止 BGM 並根據得分播放對應等級音效
+                const bgm = document.getElementById('audio-bgm');
+                bgm.pause();
+                bgm.currentTime = 0; // 重置 BGM
 
                 const percent = Math.round((userScore / questions.length) * 100);
-                let rank = { title: "漫遊旅人", badge: "🚶", color: "#718096" };
+                let rank = { title: "漫遊旅人", badge: "🚶", color: "#718096", audioId: "audio-result-basic" };
 
                 if (percent === 100) {
-                    rank = { title: "傳奇導覽大師", badge: "👑", color: "#8B0000" };
+                    rank = { title: "傳奇導覽大師", badge: "👑", color: "#8B0000", audioId: "audio-result-legendary" };
                     createConfetti();
                 } else if (percent >= 70) {
-                    rank = { title: "專業嚮導", badge: "🧭", color: "#D4AF37" };
+                    rank = { title: "專業嚮導", badge: "🧭", color: "#D4AF37", audioId: "audio-result-pro" };
                 } else if (percent >= 40) {
-                    rank = { title: "資深遊客", badge: "🎒", color: "#2c3e50" };
+                    rank = { title: "資深遊客", badge: "🎒", color: "#2c3e50", audioId: "audio-result-basic" };
+                }
+
+                if(!isMuted) {
+                    const resultAudio = document.getElementById(rank.audioId);
+                    if(resultAudio) resultAudio.play().catch(()=>{});
                 }
 
                 const gameContent = document.getElementById('qa-game-content');
@@ -402,7 +408,11 @@
     <audio id="audio-bgm" loop preload="auto" src="https://cdn.pixabay.com/audio/2022/01/18/audio_d0a13f69d2.mp3" onerror="console.error('BGM Load Error')"></audio>
     <audio id="audio-correct" preload="auto" src="https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3" onerror="console.error('Correct SFX Load Error')"></audio>
     <audio id="audio-wrong" preload="auto" src="https://assets.mixkit.co/active_storage/sfx/2003/2003-preview.mp3" onerror="console.error('Wrong SFX Load Error')"></audio>
-    <audio id="audio-victory" preload="auto" src="https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3" onerror="console.error('Victory SFX Load Error')"></audio>
+    
+    <!-- 3-Tier Result Sounds -->
+    <audio id="audio-result-legendary" preload="auto" src="https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3"></audio>
+    <audio id="audio-result-pro" preload="auto" src="https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3"></audio>
+    <audio id="audio-result-basic" preload="auto" src="https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3"></audio>
 </body>
 
 </html>
