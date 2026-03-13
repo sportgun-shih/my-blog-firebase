@@ -224,6 +224,46 @@ header {
     gap: 2rem;
 }
 
+/* Tab Styles */
+.tab-container {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+    border-bottom: 1px solid #edf2f7;
+    padding-bottom: 0.5rem;
+    overflow-x: auto;
+}
+
+.tab-item {
+    padding: 0.8rem 1.5rem;
+    cursor: pointer;
+    font-weight: 700;
+    color: #718096;
+    transition: all 0.3s;
+    border-radius: 8px 8px 0 0;
+    white-space: nowrap;
+    position: relative;
+}
+
+.tab-item:hover {
+    color: var(--primary-color);
+    background: #f8fafc;
+}
+
+.tab-item.active {
+    color: var(--primary-color);
+}
+
+.tab-item.active::after {
+    content: '';
+    position: absolute;
+    bottom: -0.6rem;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: var(--primary-color);
+}
+
 .news-item {
     background: white;
     padding: 2rem;

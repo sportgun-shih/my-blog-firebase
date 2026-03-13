@@ -54,6 +54,12 @@
                 <a href="#" class="view-more">瀏覽全部 →</a>
             </div>
 
+            <div class="tab-container" id="outcome-tabs">
+                <div class="tab-item active" onclick="switchTab('環境虛擬導覽')">環境虛擬導覽</div>
+                <div class="tab-item" onclick="switchTab('地圖故事走讀')">地圖故事走讀</div>
+                <div class="tab-item" onclick="switchTab('文學影片自白')">文學影片自白</div>
+            </div>
+
             <div class="news-list" id="outcome-container">
                 <div class="news-item loading">即將從雲端讀取內容...</div>
             </div>
@@ -96,10 +102,22 @@
     <script src="firebase-config.js"></script>
 
     <script>
+        let currentSubCategory = '環境虛擬導覽';
+
         document.addEventListener('DOMContentLoaded', () => {
             loadPostsFromCloud();
             initReveal();
         });
+
+        function switchTab(subCat) {
+            currentSubCategory = subCat;
+            // 更新 UI 狀態
+            document.querySelectorAll('.tab-item').forEach(tab => {
+                if (tab.textContent === subCat) tab.classList.add('active');
+                else tab.classList.remove('active');
+            });
+            loadPostsFromCloud(); // 重新渲染
+        }
 
         function initReveal() {
             const observer = new IntersectionObserver((entries) => {
@@ -171,16 +189,22 @@
                     `;
                     
                     if (post.category === '活動消息') {
-                        newsContainer.appendChild(item);
+                        // 最新消息限制顯示 3 個
+                        if (newsCount < 3) {
+                            newsContainer.appendChild(item);
+                        }
                         newsCount++;
-                    } else {
-                        outcomeContainer.appendChild(item);
-                        outcomeCount++;
+                    } else if (post.category === '課程成果') {
+                        // 根據子類別過濾
+                        if (post.subCategory === currentSubCategory) {
+                             outcomeContainer.appendChild(item);
+                             outcomeCount++;
+                        }
                     }
                 });
 
                 if (newsCount === 0) newsContainer.innerHTML = '<div class="news-item">尚無最新活動消息。</div>';
-                if (outcomeCount === 0) outcomeContainer.innerHTML = '<div class="news-item">尚無成果內容。</div>';
+                if (outcomeCount === 0) outcomeContainer.innerHTML = '<div class="news-item">此分類下尚無成果內容。</div>';
 
                 // 處理精選區塊顯示
                 if (featuredPost) {

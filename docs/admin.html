@@ -116,14 +116,21 @@
                     <input type="text" id="title" required placeholder="請輸入標題">
                 </div>
                 <div style="flex: 1;">
-                    <label for="category">分類</label>
-                    <input type="text" id="category" placeholder="例如：活動消息" list="categories">
-                    <datalist id="categories">
-                        <option value="活動消息">
-                        <option value="學術研討">
-                        <option value="課程成果">
-                        <option value="工作坊">
-                    </datalist>
+                    <label for="category">主類別</label>
+                    <select id="category" required onchange="toggleSubCategory()">
+                        <option value="活動消息">活動消息</option>
+                        <option value="課程成果">課程成果</option>
+                        <option value="學術研討">學術研討</option>
+                        <option value="工作坊">工作坊</option>
+                    </select>
+                </div>
+                <div id="sub-category-group" style="flex: 1; display: none;">
+                    <label for="subCategory">子類別 (成果分類)</label>
+                    <select id="subCategory">
+                        <option value="環境虛擬導覽">環境虛擬導覽</option>
+                        <option value="地圖故事走讀">地圖故事走讀</option>
+                        <option value="文學影片自白">文學影片自白</option>
+                    </select>
                 </div>
             </div>
             <div class="form-group">
@@ -354,6 +361,7 @@
 
                 const title = document.getElementById('title').value;
                 const category = document.getElementById('category').value;
+                const subCategory = category === '課程成果' ? document.getElementById('subCategory').value : '';
                 const date = document.getElementById('date').value;
                 const videoUrl = document.getElementById('videoUrl').value;
                 const panoeeUrl = document.getElementById('panoeeUrl').value;
@@ -433,7 +441,7 @@
                     if (editingPostId) {
                         // 更新現有文章 (Update)
                         await db.collection("posts").doc(editingPostId).update({
-                            title, category, date, imageUrl, videoUrl, panoeeUrl, content, isFeatured, questions,
+                            title, category, subCategory, date, imageUrl, videoUrl, panoeeUrl, content, isFeatured, questions,
                             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                         });
                         editingPostId = null;
@@ -441,7 +449,7 @@
                     } else {
                         // 建立新文章 (Add)
                         await db.collection("posts").add({
-                            title, category, date, imageUrl, videoUrl, panoeeUrl, content, isFeatured, questions,
+                            title, category, subCategory, date, imageUrl, videoUrl, panoeeUrl, content, isFeatured, questions,
                             createdAt: firebase.firestore.FieldValue.serverTimestamp()
                         });
                     }
@@ -508,7 +516,13 @@
                     document.getElementById('imageFile').value = '';
                     document.getElementById('upload-progress-container').style.display = 'none';
                     document.getElementById('title').value = post.title;
-                    document.getElementById('category').value = post.category || '';
+                    document.getElementById('category').value = post.category || '活動消息';
+                    if (post.category === '課程成果') {
+                        document.getElementById('sub-category-group').style.display = 'block';
+                        document.getElementById('subCategory').value = post.subCategory || '環境虛擬導覽';
+                    } else {
+                        document.getElementById('sub-category-group').style.display = 'none';
+                    }
                     document.getElementById('date').value = post.date;
                     document.getElementById('imageUrl').value = post.imageUrl || '';
                     document.getElementById('imageUrlInput').value = post.imageUrl || '';
@@ -583,6 +597,16 @@
             const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/|youtube\.com\/shorts\/|youtube\.com\/live\/)([^"&?\/\s]{11})/i;
             const match = url.match(regex);
             return match ? match[1] : null;
+        }
+
+        function toggleSubCategory() {
+            const categorySelect = document.getElementById('category');
+            const subCategoryGroup = document.getElementById('sub-category-group');
+            if (categorySelect.value === '課程成果') {
+                subCategoryGroup.style.display = 'block';
+            } else {
+                subCategoryGroup.style.display = 'none';
+            }
         }
 
         // --- 互動問答編輯器邏輯 ---
