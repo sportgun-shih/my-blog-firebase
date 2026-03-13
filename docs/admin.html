@@ -371,7 +371,7 @@
                     if (!questionText.trim()) return;
 
                     const optionTextarea = block.querySelector('.qa-option');
-                    const options = optionTextarea.value.split('\n').map(v => v.trim()).filter(v => v !== '');
+                    const options = optionTextarea.value.split(/\r?\n/).map(v => v.trim()).filter(v => v !== '');
                     const correctIndex = parseInt(block.querySelector('.qa-correct').value);
                     const feedback = block.querySelector('.qa-feedback').value;
 
@@ -606,8 +606,9 @@
                     <input type="text" class="qa-question" placeholder="例如：這張環景照片的地點在哪裡？" value="${data ? data.text : ''}">
                 </div>
                 <div class="form-group">
-                    <label>📝 選項 (每行一個，請至少填入兩個)</label>
-                    <textarea class="qa-option" rows="3" placeholder="選項 1&#10;選項 2&#10;選項 3">${data ? (Array.isArray(data.options) ? data.options.join('\n') : data.options) : ''}</textarea>
+                    <label>📝 選項 (每行一個，請確實按下 Enter 換行)</label>
+                    <textarea class="qa-option" rows="3" placeholder="選項 1&#10;選項 2&#10;選項 3" oninput="this.parentElement.querySelector('.option-count').textContent = '偵測到: ' + this.value.split(/\\r?\\n/).map(v => v.trim()).filter(v => v !== '').length + ' 個按鈕'">${data ? (Array.isArray(data.options) ? data.options.join('\n') : data.options) : ''}</textarea>
+                    <small class="option-count" style="color: #059669; font-weight: bold;">${data && Array.isArray(data.options) ? '偵測到: ' + data.options.length + ' 個按鈕' : '請填入選項'}</small>
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 2.5fr; gap: 1.5rem;">
                     <div class="form-group">
