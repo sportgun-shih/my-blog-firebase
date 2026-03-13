@@ -232,6 +232,13 @@ header {
     border-bottom: 1px solid #edf2f7;
     padding-bottom: 0.5rem;
     overflow-x: auto;
+    overflow-y: hidden;
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
+
+.tab-container::-webkit-scrollbar {
+    display: none; /* Chrome, Safari and Opera */
 }
 
 .tab-item {
