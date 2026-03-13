@@ -582,6 +582,53 @@
             const match = url.match(regex);
             return match ? match[1] : null;
         }
+
+        // --- 互動問答編輯器邏輯 ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const addBtn = document.getElementById('add-qa-btn');
+            if (addBtn) {
+                addBtn.addEventListener('click', () => addQABlock());
+            }
+        });
+
+        function addQABlock(data = null) {
+            const container = document.getElementById('qa-editor-container');
+            const block = document.createElement('div');
+            block.className = 'qa-block';
+            block.style = 'background: white; padding: 1.5rem; border-radius: 12px; border: 1px solid #e2e8f0; position: relative; margin-bottom: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.05);';
+            
+            block.innerHTML = `
+                <button type="button" class="btn-remove-qa" style="position: absolute; right: 15px; top: 15px; background: #ef4444; color: white; border: none; padding: 5px 12px; font-size: 0.8rem; cursor: pointer; border-radius: 6px; transition: opacity 0.2s;">
+                    🗑️ 移除問題
+                </button>
+                <div class="form-group" style="margin-right: 100px;">
+                    <label style="color: var(--primary-color);">🔖 問題內文</label>
+                    <input type="text" class="qa-question" placeholder="例如：這張環景照片的地點在哪裡？" value="${data ? data.text : ''}">
+                </div>
+                <div class="form-group">
+                    <label>📝 選項 (每行一個，請至少填入兩個)</label>
+                    <textarea class="qa-option" rows="3" placeholder="選項 1&#10;選項 2&#10;選項 3">${data ? (Array.isArray(data.options) ? data.options.join('\n') : data.options) : ''}</textarea>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 2.5fr; gap: 1.5rem;">
+                    <div class="form-group">
+                        <label>✅ 正確答案索引</label>
+                        <select class="qa-correct" style="width: 100%; padding: 0.8rem; border-radius: 4px; border: 1px solid #ddd;">
+                            ${[0, 1, 2, 3, 4].map(i => `<option value="${i}" ${data && data.correctIndex == i ? 'selected' : ''}>第 ${i + 1} 個是正確的</option>`).join('')}
+                        </select>
+                        <small style="color: #718096; display: block; margin-top: 5px;">0 代表第一個選項</small>
+                    </div>
+                    <div class="form-group">
+                        <label>💡 答對後的回饋教學內容</label>
+                        <input type="text" class="qa-feedback" placeholder="例如：答對了！這裡是大溪老街，擁有豐富的木器文化..." value="${data ? data.feedback : ''}">
+                    </div>
+                </div>
+            `;
+
+            block.querySelector('.btn-remove-qa').addEventListener('click', () => {
+                if(confirm('確定要移除這個問題嗎？')) block.remove();
+            });
+            container.appendChild(block);
+        }
     </script>
 </body>
 
