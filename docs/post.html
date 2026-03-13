@@ -209,15 +209,37 @@
         function renderQA(questions) {
             const container = document.getElementById('interactive-qa-container');
             let currentQuestionIndex = 0;
+            let userScore = 0;
 
-            const qaHtml = `
+            // 初始顯示「開始挑戰」覆蓋層
+            container.innerHTML = `
                 <section class="interactive-qa">
+                    <div id="qa-game-content">
+                        <div class="start-quiz-overlay">
+                            <span style="font-size: 4rem; display: block; margin-bottom: 1rem;">🎯</span>
+                            <h2 style="color: var(--primary-color); margin-bottom: 1.5rem;">準備好接受導覽挑戰了嗎？</h2>
+                            <p style="margin-bottom: 2.5rem; color: #4a5568;">看完導覽了嗎？測試看看你記住了多少！答對越多，稱號越高唷！</p>
+                            <button class="start-quiz-btn" onclick="startChallenge()">立即開始挑戰</button>
+                        </div>
+                    </div>
+                </section>
+            `;
+
+            window.startChallenge = () => {
+                const gameContent = document.getElementById('qa-game-content');
+                gameContent.innerHTML = `
                     <div class="qa-header">
-                        <h2><span>🧠</span> 互動教學：測測你的導覽知識</h2>
+                        <h2><span>🧠</span> 導覽挑戰進行中...</h2>
+                        <div class="progress-container">
+                            <div class="progress-bar-fill" id="progress-bar-fill"></div>
+                        </div>
                     </div>
                     <div id="qa-cards">
                         ${questions.map((q, index) => `
                             <div class="question-card ${index === 0 ? 'active' : ''}" id="qa-card-${index}">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                    <span style="color: var(--secondary-color); font-weight: bold;">第 ${index + 1} 題 / 共 ${questions.length} 題</span>
+                                </div>
                                 <p class="question-text">${q.text}</p>
                                 <div class="options-grid">
                                     ${q.options.map((opt, optIdx) => `
@@ -237,9 +259,15 @@
                         </div>
                         <button class="next-btn" id="next-qa-btn" onclick="showNextQuestion()">下一題</button>
                     </div>
-                </section>
-            `;
-            container.innerHTML = qaHtml;
+                `;
+                updateProgressBar();
+            };
+
+            function updateProgressBar() {
+                const fill = document.getElementById('progress-bar-fill');
+                const percent = (currentQuestionIndex / questions.length) * 100;
+                fill.style.width = percent + '%';
+            }
 
             window.checkAnswer = (qIdx, optIdx, correctIdx, feedback) => {
                 const card = document.getElementById(`qa-card-${qIdx}`);
@@ -252,6 +280,8 @@
                 
                 const selectedBtn = options[optIdx];
                 const isCorrect = optIdx === correctIdx;
+                
+                if (isCorrect) userScore++;
                 
                 selectedBtn.classList.add(isCorrect ? 'correct' : 'wrong');
                 
@@ -287,10 +317,51 @@
                     
                     const nextBtn = document.getElementById('next-qa-btn');
                     nextBtn.classList.remove('ready');
+                    updateProgressBar();
                 } else {
-                    alert('恭喜你完成了這篇互動教學！');
+                    renderResult();
                 }
             };
+
+            function renderResult() {
+                updateProgressBar();
+                const fill = document.getElementById('progress-bar-fill');
+                fill.style.width = '100%';
+
+                const percent = Math.round((userScore / questions.length) * 100);
+                let rank = { title: "漫遊旅人", badge: "🚶", color: "#718096" };
+
+                if (percent === 100) {
+                    rank = { title: "傳奇導覽大師", badge: "👑", color: "#8B0000" };
+                    createConfetti();
+                } else if (percent >= 70) {
+                    rank = { title: "專業嚮導", badge: "🧭", color: "#D4AF37" };
+                } else if (percent >= 40) {
+                    rank = { title: "資深遊客", badge: "🎒", color: "#2c3e50" };
+                }
+
+                const gameContent = document.getElementById('qa-game-content');
+                gameContent.innerHTML = `
+                    <div class="result-card">
+                        <span class="rank-badge">${rank.badge}</span>
+                        <h2 class="rank-title">${rank.title}</h2>
+                        <p class="score-text">挑戰完成！您的得分是 <strong>${percent}%</strong> (${userScore}/${questions.length})</p>
+                        <button class="start-quiz-btn" onclick="location.reload()" style="font-size: 1rem; padding: 0.8rem 2rem;">再挑戰一次</button>
+                    </div>
+                `;
+            }
+
+            function createConfetti() {
+                for (let i = 0; i < 50; i++) {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + 'vw';
+                    confetti.style.animationDuration = (Math.random() * 2 + 1) + 's';
+                    confetti.style.backgroundColor = ['#8B0000', '#D4AF37', '#005a8d', '#FFD700'][Math.floor(Math.random() * 4)];
+                    document.body.appendChild(confetti);
+                    setTimeout(() => confetti.remove(), 3000);
+                }
+            }
         }
     </script>
 </body>
