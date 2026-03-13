@@ -142,8 +142,9 @@
             const videoFrame = document.querySelector('#featured-video-wrapper iframe');
             const featuredVideoWrapper = document.getElementById('featured-video-wrapper');
             const featuredImageWrapper = document.getElementById('featured-image-wrapper');
-                const featuredPanoeeWrapper = document.getElementById('featured-panoee-wrapper');
-                const panoeeFrame = document.querySelector('#featured-panoee-wrapper iframe');
+            const featuredImage = document.getElementById('featured-image');
+            const featuredPanoeeWrapper = document.getElementById('featured-panoee-wrapper');
+            const panoeeFrame = document.querySelector('#featured-panoee-wrapper iframe');
 
                 // 監聽雲端資料庫變化 (Real-time listener)
                 db.collection("posts").orderBy("date", "desc").onSnapshot((querySnapshot) => {
@@ -193,14 +194,14 @@
                         <span class="date">${post.date}</span>
                     `;
                     
-                    if (post.category === '活動消息') {
-                        // 最新消息限制顯示 3 個
+                    if (post.category === '活動消息' || post.category === '學術研討' || post.category === '工作坊') {
+                        // 最新消息限制顯示 3 個 (包含活動、研討、工作坊)
                         if (newsCount < 3) {
                             newsContainer.appendChild(item);
                         }
                         newsCount++;
                     } else if (post.category === '課程成果') {
-                        // 根據子類別過濾
+                        // 課程成果專屬區塊，持續根據子類別過濾
                         if (post.subCategory === currentSubCategory) {
                              outcomeContainer.appendChild(item);
                              outcomeCount++;
@@ -247,7 +248,8 @@
                     multimediaSection.style.display = 'none';
                 }
             }, (error) => {
-                postsContainer.innerHTML = '<div class="news-item" style="color:red;">資料載入失敗：' + error.message + '</div>';
+                newsContainer.innerHTML = '<div class="news-item" style="color:red;">載入失敗：' + error.message + '</div>';
+                outcomeContainer.innerHTML = '<div class="news-item" style="color:red;">載入失敗：' + error.message + '</div>';
             });
         }
 
